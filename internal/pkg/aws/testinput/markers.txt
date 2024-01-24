@@ -1,0 +1,5 @@
+# +policygen:aws:iam:policy:name=test,action=`ec2:DescribeVpcs`
+
+//+policygen:aws:iam:policy:name=test,action=`ec2:Describe*`,effect=Deny
+
++policygen:aws:iam:policy:name=test,action=`iam:Describe*`,effect=Allow,resource=`arn:aws:iam::aws:policy/aws-service-role/*`

@@ -5,17 +5,23 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/nukleros/markers"
 	"github.com/nukleros/markers/parser"
+
+	"github.com/scottd018/policy-gen/internal/pkg/constants"
+	"github.com/scottd018/policy-gen/internal/pkg/input"
 )
 
 var (
 	ErrMarkerMissingName        = errors.New("marker missing name field")
 	ErrMarkerMissingAction      = errors.New("marker missing action field")
 	ErrMarkerInvalidEffect      = errors.New("invalid marker effect")
-	ErrMarkerInvalidStatementId = errors.New("invalid statement id (SID)")
+	ErrMarkerInvalidStatementId = errors.New("invalid statement id - must contain a-z, A-Z, 0-9 and limited to 64 characters")
 )
 
 const (
+	awsMarkerDefinition = "aws:iam:policy"
+
 	ValidEffectAllow = "Allow"
 	ValidEffectDeny  = "Deny"
 )
@@ -29,6 +35,44 @@ type Marker struct {
 }
 
 type Markers []Marker
+
+// MarkerDefinition returns the marker definition for an AWS IAM policy marker.
+func MarkerDefinition() string {
+	return fmt.Sprintf("+%s:%s", constants.MarkerPrefix, awsMarkerDefinition)
+}
+
+// MarkerResults return a set of marker results from a given path.
+func MarkerResults(path string) ([]*parser.Result, error) {
+	policyMarker := Marker{}
+
+	// create a registry for our field markers
+	registry := markers.NewRegistry()
+
+	// define our marker
+	definition, err := markers.Define(MarkerDefinition(), policyMarker)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create policy definition for marker [%s] - %w", MarkerDefinition(), err)
+	}
+
+	// add the marker to the registry
+	registry.Add(definition)
+
+	// collect the data from the given path
+	data, err := input.Collect(path)
+	if err != nil {
+		return nil, fmt.Errorf("error collecting file data for marker [%s] - %w", err)
+	}
+
+	// run the parser
+	results := markers.NewParser(string(data), registry).Parse()
+	if len(results) == 0 {
+		fmt.Printf("no results found for marker [%s] at path [%s]\n", MarkerDefinition(), path)
+
+		return []*parser.Result{}, nil
+	}
+
+	return results, nil
+}
 
 // FindMarkers finds all the markers in a given set of parsed results.
 func FindMarkers(results []*parser.Result) (Markers, error) {
@@ -78,22 +122,22 @@ func (marker Marker) Validate() error {
 		}
 	}
 
+	// ensure the sid is valid if specified
+	if marker.Id != nil {
+		regex := regexp.MustCompile(statementIdRegex)
+
+		if !regex.MatchString(*marker.Id) {
+			return fmt.Errorf("%w - [%s]", ErrMarkerInvalidStatementId, *marker.Id)
+		}
+	}
+
 	// ensure effect is valid
 	if marker.Effect == nil {
 		return nil
 	}
 
 	if *marker.Effect != ValidEffectAllow && *marker.Effect != ValidEffectDeny {
-		return fmt.Errorf("[%s] - %w", *marker.Effect, ErrMarkerInvalidEffect)
-	}
-
-	// ensure the sid is valid if specified
-	if marker.Id != nil {
-		regex := regexp.MustCompile(statementIdRegex)
-
-		if !regex.MatchString(*marker.Id) {
-			return fmt.Errorf("invalid statement id [%s] - %w", *marker.Id, ErrMarkerInvalidStatementId)
-		}
+		return fmt.Errorf("%w [%s]", ErrMarkerInvalidEffect, *marker.Effect)
 	}
 
 	return nil
@@ -119,32 +163,12 @@ func (marker *Marker) WithDefault() {
 
 // ToStatement converts a marker to an AWS IAM policy statement.
 func (marker Marker) ToStatement() Statement {
-	// create a statement with the base fields that contains all
-	// required marker fields
-	statement := Statement{
-		Action: []string{*marker.Action},
+	return Statement{
+		Action:    []string{*marker.Action},
+		Effect:    *marker.Effect,
+		Resources: []string{*marker.Resource},
+		SID:       *marker.Id,
 	}
-
-	// add the effect if we specified one otherwise default to allow
-	if marker.Effect == nil {
-		statement.Effect = *marker.Effect
-	} else {
-		statement.Effect = defaultStatementEffect
-	}
-
-	// add the resource if we specified one otherwise default to all
-	if marker.Resource == nil {
-		statement.Resources = []string{defaultStatementResource}
-	} else {
-		statement.Resources = []string{*marker.Resource}
-	}
-
-	// add the id if we specified one otherwise use the default statement id
-	if marker.Id == nil {
-		statement.SID = defaultStatementId
-	}
-
-	return statement
 }
 
 // Process processes a set of markers into their output policy files.
@@ -183,5 +207,5 @@ func (markers Markers) Process() PolicyFiles {
 		policyFiles[filename] = NewPolicyDocument(markers...)
 	}
 
-	return nil
+	return policyFiles
 }

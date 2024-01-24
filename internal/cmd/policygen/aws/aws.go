@@ -3,28 +3,26 @@ package aws
 import (
 	"fmt"
 
-	parser "github.com/nukleros/markers"
 	"github.com/scottd018/go-utils/pkg/directory"
 	"github.com/spf13/cobra"
 
 	"github.com/scottd018/policy-gen/internal/pkg/aws"
-	"github.com/scottd018/policy-gen/internal/pkg/input"
 )
 
 const awsPolicyGenExample = `
-policygen aws --input-path=<input_path> --output-path='<output_path>'
+policygen aws --input-path=<input_path> --output-path='<output_path>' --force
 `
 
 const (
 	flagInputPath  = "input-path"
 	flagOutputPath = "output-path"
-
-	markerDefinition = "+aws:iam:policy"
+	flagForce      = "force"
 )
 
 type awsPolicyGenInputs struct {
 	inputPath  string
 	outputPath string
+	force      bool
 }
 
 func NewCommand() *cobra.Command {
@@ -44,6 +42,7 @@ func NewCommand() *cobra.Command {
 	// add flags
 	command.Flags().StringVarP(&input.inputPath, flagInputPath, "i", "./", "Input path to recursively begin parsing markers")
 	command.Flags().StringVarP(&input.outputPath, flagOutputPath, "o", "./", "Output path to output generated policies")
+	command.Flags().BoolVarP(&input.force, flagForce, "f", false, "Forcefully overwrite files with matching names")
 
 	return command
 }
@@ -77,38 +76,22 @@ func setup(inputs awsPolicyGenInputs) error {
 }
 
 func run(inputs awsPolicyGenInputs) error {
-	policyMarker := aws.Marker{}
-
-	// create a registry for our field markers
-	registry := parser.NewRegistry()
-
-	// define our marker
-	definition, err := parser.Define(markerDefinition, policyMarker)
+	// retrieve the marker results from the input path
+	results, err := aws.MarkerResults(inputs.inputPath)
 	if err != nil {
-		return fmt.Errorf("unable to create policy definition for marker [%s] - %w", markerDefinition, err)
+		return fmt.Errorf("error finding marker results from input path [%s] - %w", inputs.inputPath, err)
 	}
 
-	// add the marker to the registry
-	registry.Add(definition)
-
-	// collect the data from the given path
-	data, err := input.Collect(inputs.inputPath)
+	// convert our file markers into aws markers
+	awsMarkers, err := aws.FindMarkers(results)
 	if err != nil {
-		return fmt.Errorf("unable to collect file data to be parsed from path [%s] - %w", inputs.inputPath, err)
+		return fmt.Errorf("error converting results to markers - %w", err)
 	}
 
-	// run the parser
-	results := parser.NewParser(string(data), registry).Parse()
-	if len(results) == 0 {
-		fmt.Printf("no results found for marker [%s] at path [%s]\n", markerDefinition, inputs.inputPath)
-
-		return nil
-	}
-
-	// process the results
-	_, err = aws.FindMarkers(results)
+	// process the markers and write the files
+	err = awsMarkers.Process().Write(inputs.outputPath, inputs.force)
 	if err != nil {
-		return fmt.Errorf("unable to convert results to markers - %w", err)
+		return fmt.Errorf("error writing files to output path [%s] - %w", inputs.outputPath, err)
 	}
 
 	return nil

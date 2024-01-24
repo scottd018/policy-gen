@@ -1,13 +1,19 @@
 package aws
 
+import (
+	"fmt"
+
+	"github.com/scottd018/go-utils/pkg/pointers"
+)
+
 const (
-	defaultVersion = "2012=10-17"
+	defaultVersion = "2012-10-17"
 )
 
 // PolicyDocument represents an individual AWS IAM policy document.
 type PolicyDocument struct {
-	Version    string
-	Statements Statements
+	Version    string     `json:"Version"`
+	Statements Statements `json:"Statements"`
 }
 
 // NewPolicyDocument creates a new policy document from a set of markers.
@@ -40,6 +46,13 @@ func (document *PolicyDocument) AddStatementFor(marker Marker) {
 		document.Statements = append(document.Statements, marker.ToStatement())
 
 		return
+	} else {
+		// adjust the id if we have effects that are mismatched (e.g. Allow/Deny)
+		if !statement.HasEffect(*marker.Effect) {
+			marker.Id = pointers.String(fmt.Sprintf("%s%s", *marker.Id, *marker.Effect))
+
+			document.AddStatementFor(marker)
+		}
 	}
 
 	// append the marker data to the existing statement

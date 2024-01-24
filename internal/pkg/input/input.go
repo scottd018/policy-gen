@@ -24,7 +24,7 @@ func Collect(path string) ([]byte, error) {
 		// read in the file
 		fileContent, err := os.ReadFile(filePath)
 		if err != nil {
-			return fmt.Errorf("unable to read file at path [%s] - %w", filePath, err)
+			return fmt.Errorf("unable to read file [%s] - %w", filePath, err)
 		}
 
 		// only append text file content
@@ -36,7 +36,7 @@ func Collect(path string) ([]byte, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to recursively collect file input from path [%s] - %w", path, err)
+		return nil, fmt.Errorf("unable to recursively collect file input - %w", err)
 	}
 
 	return result, nil

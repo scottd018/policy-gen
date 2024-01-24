@@ -11,10 +11,10 @@ var (
 )
 
 type Statement struct {
-	SID       string
-	Effect    string
-	Action    []string
-	Resources []string
+	SID       string   `json:"SID"`
+	Effect    string   `json:"Effect"`
+	Action    []string `json:"Action"`
+	Resources []string `json:"Resources"`
 }
 
 type Statements []Statement
@@ -67,6 +67,13 @@ func (statement Statement) HasResource(resource string) bool {
 	return false
 }
 
+// HasEffect determines if a particular statement has an effect.  It is a helper
+// method to make the calling code a bit more readable and consistent with the
+// other Has* methods.
+func (statement Statement) HasEffect(effect string) bool {
+	return statement.Effect == effect
+}
+
 // AppendAction appends an action to an existing statement.
 func (statement *Statement) AppendAction(action string) {
 	// if the statement actions are missing add them
@@ -107,12 +114,16 @@ func (statement *Statement) AppendResource(resource string) {
 		return
 	}
 
-	// if the statement already has the resource, simply return
-	if statement.HasResource(resource) {
-		return
+	// if the statement has exactly one resource equal to the default resource
+	// replace it.
+	if len(statement.Resources) == 1 && statement.HasResource(defaultStatementResource) {
+		statement.Resources = []string{resource}
 	}
 
-	statement.Resources = append(statement.Resources, resource)
+	// if the statement does not already have the resource, add it
+	if !statement.HasResource(resource) {
+		statement.Resources = append(statement.Resources, resource)
+	}
 }
 
 // AppendFor appends a statement to an existing statement given a marker.
