@@ -11,5 +11,5 @@ lint:
 test-unit:
 	go test -cover -coverprofile=./bin/coverage.out ./...
 
-test-coverage-view: test
+test-coverage-view: test-unit
 	go tool cover -html=./bin/coverage.out
