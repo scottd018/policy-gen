@@ -2,12 +2,28 @@ package aws
 
 import (
 	"fmt"
+	"path/filepath"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/nukleros/markers/parser"
 	"github.com/scottd018/go-utils/pkg/pointers"
 )
+
+func thisFilePath() string {
+	_, file, _, ok := runtime.Caller(1)
+	if !ok {
+		return "."
+	}
+
+	absPath, err := filepath.Abs(file)
+	if err != nil {
+		return "."
+	}
+
+	return filepath.Dir(absPath)
+}
 
 func TestMarkerResults(t *testing.T) {
 	t.Parallel()
@@ -33,7 +49,7 @@ func TestMarkerResults(t *testing.T) {
 		{
 			name: "ensure path with no results returns empty",
 			args: args{
-				path: "testdata/empty.txt",
+				path: fmt.Sprintf("%s/testinput/empty.txt", thisFilePath()),
 			},
 			want:    []*parser.Result{},
 			wantErr: false,
@@ -41,7 +57,7 @@ func TestMarkerResults(t *testing.T) {
 		{
 			name: "ensure results are parsed properly",
 			args: args{
-				path: "testdata",
+				path: fmt.Sprintf("%s/testinput", thisFilePath()),
 			},
 			want: []*parser.Result{
 				{
@@ -80,6 +96,7 @@ func TestMarkerResults(t *testing.T) {
 			got, err := MarkerResults(tt.args.path)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MarkerResults() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
@@ -314,6 +331,7 @@ func TestFindMarkers(t *testing.T) {
 			got, err := FindMarkers(tt.args.results)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FindMarkers() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
