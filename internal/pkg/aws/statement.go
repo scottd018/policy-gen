@@ -1,13 +1,13 @@
 package aws
 
 const (
-	statementIdRegex = "^[a-zA-Z0-9]{1,64}$"
+	statementIDRegex = "^[a-zA-Z0-9]{1,64}$"
 )
 
 var (
 	defaultStatementEffect   = ValidEffectAllow
 	defaultStatementResource = "*"
-	defaultStatementId       = "Default"
+	defaultStatementID       = "Default"
 )
 
 type Statement struct {
@@ -21,7 +21,7 @@ type Statements []Statement
 
 // Find finds a statement by its SID.  It return a nil value if no statements with
 // a matching SID is found.
-func (statements Statements) Find(statementId string) *Statement {
+func (statements Statements) Find(statementID string) *Statement {
 	// return immediately if there are no statements.
 	if len(statements) == 0 {
 		return nil
@@ -29,7 +29,7 @@ func (statements Statements) Find(statementId string) *Statement {
 
 	// return a statement with the given SID.
 	for i := range statements {
-		if statements[i].SID == statementId {
+		if statements[i].SID == statementID {
 			return &statements[i]
 		}
 	}
@@ -38,7 +38,7 @@ func (statements Statements) Find(statementId string) *Statement {
 }
 
 // HasAction determines if a particular statement has an action.
-func (statement Statement) HasAction(action string) bool {
+func (statement *Statement) HasAction(action string) bool {
 	if len(statement.Action) == 0 {
 		return false
 	}
@@ -53,7 +53,7 @@ func (statement Statement) HasAction(action string) bool {
 }
 
 // HasAction determines if a particular statement has a resource.
-func (statement Statement) HasResource(resource string) bool {
+func (statement *Statement) HasResource(resource string) bool {
 	if len(statement.Resources) == 0 {
 		return false
 	}
@@ -70,7 +70,7 @@ func (statement Statement) HasResource(resource string) bool {
 // HasEffect determines if a particular statement has an effect.  It is a helper
 // method to make the calling code a bit more readable and consistent with the
 // other Has* methods.
-func (statement Statement) HasEffect(effect string) bool {
+func (statement *Statement) HasEffect(effect string) bool {
 	return statement.Effect == effect
 }
 

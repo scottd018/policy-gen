@@ -40,13 +40,6 @@ linters-settings:
           - return
   govet:
     check-shadowing: true
-    settings:
-      printf:
-        funcs:
-          - (github.com/scottd018/policy-gen/pkg/logutils.Log).Infof
-          - (github.com/scottd018/policy-gen/logutils.Log).Warnf
-          - (github.com/scottd018/policy-gen/pkg/logutils.Log).Errorf
-          - (github.com/scottd018/policy-gen/pkg/logutils.Log).Fatalf
   lll:
     line-length: 140
   maligned:
@@ -61,32 +54,26 @@ linters-settings:
   staticcheck:
     checks:
       - all
-      - '-SA1019' # disable strings.Title check
 
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
   # inverted configuration with `enable-all` and `disable` is not scalable
-  ##  during updates of golangci-lint
+  # during updates of golangci-lint
   disable-all: true
   enable:
     - asciicheck
     - bodyclose
-    #- cyclop
-    - depguard
+    - cyclop
     - dogsled
     - dupl
     - durationcheck
     - errcheck
     - errorlint
-    #- exhaustive
-    #- exhaustivestruct
     - exportloopref
     - forbidigo
     - forcetypeassert
     - funlen
-    # disable due to false positives
-    #- gci
-    - gochecknoglobals
+    - gci
     - gochecknoinits
     - gocognit
     - goconst
@@ -94,9 +81,7 @@ linters:
     - gocyclo
     - godot
     - godox
-    - goerr113
-    # disable due to false positives in detecting gofmt -s
-    #- gofmt
+    - gofmt
     - goheader
     - goimports
     - gomnd
@@ -119,12 +104,11 @@ linters:
     - paralleltest
     - prealloc
     - predeclared
-    #- revive
+    - revive
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
     - stylecheck
-    - testpackage
     - thelper
     - tparallel
     - typecheck
@@ -136,26 +120,22 @@ linters:
     - wrapcheck
     - wsl
 
+    # global exclusions:
+    # - testpackage
+    # - exhaustruct
+    # - depguard
+    # - gochecknoglobals
+    # - goerr113
+
 issues:
-  # Excluding configuration per-path, per-linter, per-text and per-source
+  # excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
     - path: _test\.go
       linters:
         - gomnd
         - funlen
         - scopelint
-    - path: internal/commands/*\.go
-      linters:
-        - gochecknoglobals
-    - path: internal/plugins/workload/v1/scaffolds/templates/readme.go
-      linters:
-        - gomnd
-    # https://github.com/go-critic/go-critic/issues/926
-    - linters:
-        - gocritic
-      text: "unnecessaryDefer:"
-  exclude:
-    - 'declaration of "(err|ctx)" shadows declaration at'
+        - lll
 
 run:
   skip-dirs:

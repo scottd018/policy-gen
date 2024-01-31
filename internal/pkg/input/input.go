@@ -7,6 +7,13 @@ import (
 	"unicode/utf8"
 )
 
+type Input struct {
+	InputPath  string
+	OutputPath string
+	Force      bool
+	Debug      bool
+}
+
 func Collect(path string) ([]byte, error) {
 	var result []byte
 

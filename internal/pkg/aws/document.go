@@ -1,7 +1,9 @@
 package aws
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/scottd018/go-utils/pkg/pointers"
 )
@@ -46,15 +48,42 @@ func (document *PolicyDocument) AddStatementFor(marker Marker) {
 		document.Statements = append(document.Statements, marker.ToStatement())
 
 		return
-	} else {
+	} else if !statement.HasEffect(*marker.Effect) {
 		// adjust the id if we have effects that are mismatched (e.g. Allow/Deny)
-		if !statement.HasEffect(*marker.Effect) {
-			marker.Id = pointers.String(fmt.Sprintf("%s%s", *marker.Id, *marker.Effect))
+		marker.Id = pointers.String(fmt.Sprintf("%s%s", *marker.Id, *marker.Effect))
 
-			document.AddStatementFor(marker)
-		}
+		document.AddStatementFor(marker)
 	}
 
 	// append the marker data to the existing statement
 	statement.AppendFor(marker)
+}
+
+// Write writes a policy document to a file.
+func (document *PolicyDocument) Write(file string, force bool) error {
+	// convert struct to json
+	jsonData, err := json.MarshalIndent(document, "", "  ")
+	if err != nil {
+		return fmt.Errorf("unable to marshal json for file [%s] - %w", file, err)
+	}
+
+	// check if the file already exists
+	if _, err = os.Stat(file); os.IsNotExist(err) {
+		// write the file
+		err = os.WriteFile(file, jsonData, policyFilePermissions)
+		if err != nil {
+			return fmt.Errorf("unable to write file [%s] - %w", file, err)
+		}
+	}
+
+	// write the file only if force is requested
+	if !force {
+		return fmt.Errorf("unable to write file [%s]; use --force if you wish to overwrite", file)
+	}
+
+	if err := os.WriteFile(file, jsonData, policyFilePermissions); err != nil {
+		return fmt.Errorf("unable to write file [%s] - %w", file, err)
+	}
+
+	return nil
 }

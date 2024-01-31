@@ -2,344 +2,11 @@ package aws
 
 import (
 	"fmt"
-	"path/filepath"
 	"reflect"
-	"runtime"
 	"testing"
 
-	"github.com/nukleros/markers/parser"
 	"github.com/scottd018/go-utils/pkg/pointers"
 )
-
-func thisFilePath() string {
-	_, file, _, ok := runtime.Caller(1)
-	if !ok {
-		return "."
-	}
-
-	absPath, err := filepath.Abs(file)
-	if err != nil {
-		return "."
-	}
-
-	return filepath.Dir(absPath)
-}
-
-func TestMarkerResults(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		path string
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		want    []*parser.Result
-		wantErr bool
-	}{
-		{
-			name: "ensure missing path returns an error",
-			args: args{
-				path: "thisisfake",
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure path with no results returns empty",
-			args: args{
-				path: fmt.Sprintf("%s/testinput/empty.txt", thisFilePath()),
-			},
-			want:    []*parser.Result{},
-			wantErr: false,
-		},
-		{
-			name: "ensure results are parsed properly",
-			args: args{
-				path: fmt.Sprintf("%s/testinput", thisFilePath()),
-			},
-			want: []*parser.Result{
-				{
-					MarkerText: "+policygen:aws:iam:policy:name=test,action=`ec2:DescribeVpcs`\n",
-					Object: Marker{
-						Name:   pointers.String("test"),
-						Action: pointers.String("ec2:DescribeVpcs"),
-					},
-				},
-				{
-					MarkerText: "+policygen:aws:iam:policy:name=test,action=`ec2:Describe*`,effect=Deny\n",
-					Object: Marker{
-						Name:   pointers.String("test"),
-						Action: pointers.String("ec2:Describe*"),
-						Effect: pointers.String(ValidEffectDeny),
-					},
-				},
-				{
-					MarkerText: "+policygen:aws:iam:policy:name=test,action=`iam:Describe*`,effect=Allow,resource=`arn:aws:iam::aws:policy/aws-service-role/*`\n",
-					Object: Marker{
-						Name:     pointers.String("test"),
-						Action:   pointers.String("iam:Describe*"),
-						Effect:   pointers.String(ValidEffectAllow),
-						Resource: pointers.String("arn:aws:iam::aws:policy/aws-service-role/*"),
-					},
-				},
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			got, err := MarkerResults(tt.args.path)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("MarkerResults() error = %v, wantErr %v", err, tt.wantErr)
-
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MarkerResults() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestFindMarkers(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		results []*parser.Result
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		want    Markers
-		wantErr bool
-	}{
-		{
-			name: "ensure marker with invalid object type returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: PolicyDocument{},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure marker with missing name returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("test"),
-							Action: pointers.String("ec2:DescribeVpcs"),
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure marker with blank name returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("test"),
-							Action: pointers.String("ec2:DescribeVpcs"),
-							Name:   pointers.String(""),
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure marker with nil name returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("test"),
-							Action: pointers.String("ec2:DescribeVpcs"),
-							Name:   nil,
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure marker with missing action returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:   pointers.String("test"),
-							Name: pointers.String("test"),
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure marker with blank action returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("test"),
-							Action: pointers.String(""),
-							Name:   pointers.String("test"),
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure marker with nil action returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("test"),
-							Action: nil,
-							Name:   pointers.String("test"),
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure marker with invalid id returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("test-123"),
-							Action: pointers.String("ec2:DescribeVpcs"),
-							Name:   pointers.String("test"),
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure marker with invalid id length returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttestt"),
-							Action: pointers.String("ec2:DescribeVpcs"),
-							Name:   pointers.String("test"),
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure marker with invalid effect returns error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("test"),
-							Action: pointers.String("ec2:DescribeVpcs"),
-							Name:   pointers.String("test"),
-							Effect: pointers.String("Fail"),
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "ensure valid marker with no effect returns without error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("test"),
-							Action: pointers.String("ec2:DescribeVpcs"),
-							Name:   pointers.String("test"),
-							Effect: nil,
-						},
-					},
-				},
-			},
-			want: Markers{
-				{
-					Id:     pointers.String("test"),
-					Action: pointers.String("ec2:DescribeVpcs"),
-					Name:   pointers.String("test"),
-					Effect: nil,
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "ensure valid marker with returns without error",
-			args: args{
-				results: []*parser.Result{
-					{
-						Object: Marker{
-							Id:     pointers.String("test"),
-							Action: pointers.String("ec2:DescribeVpcs"),
-							Name:   pointers.String("test"),
-							Effect: pointers.String(defaultStatementEffect),
-						},
-					},
-				},
-			},
-			want: Markers{
-				{
-					Id:     pointers.String("test"),
-					Action: pointers.String("ec2:DescribeVpcs"),
-					Name:   pointers.String("test"),
-					Effect: pointers.String(defaultStatementEffect),
-				},
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			got, err := FindMarkers(tt.args.results)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("FindMarkers() error = %v, wantErr %v", err, tt.wantErr)
-
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FindMarkers() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestMarker_WithDefault(t *testing.T) {
 	t.Parallel()
@@ -353,7 +20,7 @@ func TestMarker_WithDefault(t *testing.T) {
 			want: &Marker{
 				Effect:   pointers.String(defaultStatementEffect),
 				Resource: pointers.String(defaultStatementResource),
-				Id:       pointers.String(defaultStatementId),
+				Id:       pointers.String(defaultStatementID),
 			},
 		},
 	}
@@ -371,7 +38,7 @@ func TestMarker_WithDefault(t *testing.T) {
 	}
 }
 
-func TestMarkers_Process(t *testing.T) {
+func TestMarkers_PolicyFiles(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -392,7 +59,7 @@ func TestMarkers_Process(t *testing.T) {
 					Version: defaultVersion,
 					Statements: []Statement{
 						{
-							SID:       defaultStatementId,
+							SID:       defaultStatementID,
 							Effect:    defaultStatementEffect,
 							Resources: []string{defaultStatementResource},
 							Action:    []string{"ec2:DescribeVpcs"},
@@ -566,7 +233,7 @@ func TestMarkers_Process(t *testing.T) {
 							},
 						},
 						{
-							SID:       defaultStatementId,
+							SID:       defaultStatementID,
 							Effect:    ValidEffectAllow,
 							Resources: []string{defaultStatementResource},
 							Action: []string{
@@ -589,7 +256,7 @@ func TestMarkers_Process(t *testing.T) {
 							},
 						},
 						{
-							SID:    defaultStatementId,
+							SID:    defaultStatementID,
 							Effect: ValidEffectAllow,
 							Resources: []string{
 								"thisisfake",
@@ -601,7 +268,7 @@ func TestMarkers_Process(t *testing.T) {
 							},
 						},
 						{
-							SID:    fmt.Sprintf("%s%s", defaultStatementId, ValidEffectDeny),
+							SID:    fmt.Sprintf("%s%s", defaultStatementID, ValidEffectDeny),
 							Effect: ValidEffectDeny,
 							Resources: []string{
 								"thisisfake2",
@@ -620,8 +287,8 @@ func TestMarkers_Process(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if got := tt.markers.Process(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Markers.Process() = %v, want %v", got, tt.want)
+			if got := tt.markers.PolicyFiles(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Markers.PolicyFiles() = %v, want %v", got, tt.want)
 			}
 		})
 	}
