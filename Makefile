@@ -8,8 +8,7 @@ install-linter:
 lint:
 	golangci-lint run
 
-.PHONY: test
-test:
+test-unit:
 	go test -cover -coverprofile=./bin/coverage.out ./...
 
 test-coverage-view: test
