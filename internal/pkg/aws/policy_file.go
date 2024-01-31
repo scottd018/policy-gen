@@ -2,7 +2,6 @@ package aws
 
 import (
 	"fmt"
-	"strings"
 )
 
 const (
@@ -11,11 +10,7 @@ const (
 
 type PolicyFiles map[string]*PolicyDocument
 
-// Filename constructs a name for a policy file to write.
-func Filename(path, name string) string {
-	if strings.HasSuffix(path, "/") {
-		return fmt.Sprintf("%s%s.json", path, name)
-	}
-
-	return fmt.Sprintf("%s/%s.json", path, name)
+// PolicyFilename constructs a name for a policy file to write.  This
+func PolicyFilename(path, name string) string {
+	return fmt.Sprintf("%s/%s", path, name)
 }

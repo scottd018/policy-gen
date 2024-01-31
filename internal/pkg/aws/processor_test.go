@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/scottd018/go-utils/pkg/pointers"
 
+	"github.com/scottd018/policy-gen/internal/pkg/files"
 	"github.com/scottd018/policy-gen/internal/pkg/input"
 )
 
@@ -32,7 +33,7 @@ func Test_markerProcessor_Parse(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		Input input.Input
+		Input *input.Processor
 	}
 
 	tests := []struct {
@@ -44,9 +45,9 @@ func Test_markerProcessor_Parse(t *testing.T) {
 		{
 			name: "ensure missing path returns an error",
 			fields: fields{
-				Input: input.Input{
-					InputPath: "thisisfake",
-					Debug:     true,
+				Input: &input.Processor{
+					InputDirectory: &files.Directory{Path: "thisisfake"},
+					Debug:          true,
 				},
 			},
 			want:    nil,
@@ -55,7 +56,9 @@ func Test_markerProcessor_Parse(t *testing.T) {
 		{
 			name: "ensure path with no results returns empty",
 			fields: fields{
-				Input: input.Input{InputPath: fmt.Sprintf("%s/testinput/empty.txt", thisFilePath())},
+				Input: &input.Processor{
+					InputDirectory: &files.Directory{Path: fmt.Sprintf("%s/testinput/empty.txt", thisFilePath())},
+				},
 			},
 			want:    []*parser.Result{},
 			wantErr: false,
@@ -63,7 +66,9 @@ func Test_markerProcessor_Parse(t *testing.T) {
 		{
 			name: "ensure results are parsed properly",
 			fields: fields{
-				Input: input.Input{InputPath: fmt.Sprintf("%s/testinput", thisFilePath())},
+				Input: &input.Processor{
+					InputDirectory: &files.Directory{Path: fmt.Sprintf("%s/testinput", thisFilePath())},
+				},
 			},
 			want: []*parser.Result{
 				{
@@ -120,7 +125,7 @@ func Test_markerProcessor_FindMarkers(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		Input input.Input
+		Input input.Flags
 		Log   zerolog.Logger
 	}
 

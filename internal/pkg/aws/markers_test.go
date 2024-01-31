@@ -293,3 +293,171 @@ func TestMarkers_PolicyFiles(t *testing.T) {
 		})
 	}
 }
+
+func TestMarker_EffectColumn(t *testing.T) {
+	t.Parallel()
+
+	type fields struct {
+		Effect *string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "ensure marker with nil effect returns appropriately",
+			fields: fields{
+				Effect: nil,
+			},
+			want: defaultStatementEffect,
+		},
+		{
+			name: "ensure marker with non-nil effect returns appropriately",
+			fields: fields{
+				Effect: pointers.String(defaultStatementEffect),
+			},
+			want: defaultStatementEffect,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			marker := &Marker{
+				Effect: tt.fields.Effect,
+			}
+			if got := marker.EffectColumn(); got != tt.want {
+				t.Errorf("Marker.EffectColumn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMarker_PermissionColumn(t *testing.T) {
+	t.Parallel()
+
+	type fields struct {
+		Action *string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "ensure marker with nil action returns appropriately",
+			fields: fields{
+				Action: nil,
+			},
+			want: "",
+		},
+		{
+			name: "ensure marker with non-nil action returns appropriately",
+			fields: fields{
+				Action: pointers.String("ec2:DescribeVpcs"),
+			},
+			want: "ec2:DescribeVpcs",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			marker := &Marker{
+				Action: tt.fields.Action,
+			}
+			if got := marker.PermissionColumn(); got != tt.want {
+				t.Errorf("Marker.PermissionColumn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMarker_ResourceColumn(t *testing.T) {
+	t.Parallel()
+
+	type fields struct {
+		Resource *string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "ensure marker with nil resource returns appropriately",
+			fields: fields{
+				Resource: nil,
+			},
+			want: defaultStatementResource,
+		},
+		{
+			name: "ensure marker with non-nil resource returns appropriately",
+			fields: fields{
+				Resource: pointers.String(defaultStatementResource),
+			},
+			want: defaultStatementResource,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			marker := &Marker{
+				Resource: tt.fields.Resource,
+			}
+			if got := marker.ResourceColumn(); got != tt.want {
+				t.Errorf("Marker.ResourceColumn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMarker_ReasonColumn(t *testing.T) {
+	t.Parallel()
+
+	type fields struct {
+		Reason *string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "ensure marker with nil reason returns appropriately",
+			fields: fields{
+				Reason: nil,
+			},
+			want: "",
+		},
+		{
+			name: "ensure marker with non-nil reason returns appropriately",
+			fields: fields{
+				Reason: pointers.String("because i said so"),
+			},
+			want: "because i said so",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			marker := &Marker{
+				Reason: tt.fields.Reason,
+			}
+			if got := marker.ReasonColumn(); got != tt.want {
+				t.Errorf("Marker.ReasonColumn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

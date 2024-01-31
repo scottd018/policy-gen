@@ -1,11 +1,11 @@
 package aws
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/scottd018/go-utils/pkg/pointers"
+
+	"github.com/scottd018/policy-gen/internal/pkg/files"
 )
 
 const (
@@ -59,30 +59,15 @@ func (document *PolicyDocument) AddStatementFor(marker Marker) {
 	statement.AppendFor(marker)
 }
 
-// Write writes a policy document to a file.
-func (document *PolicyDocument) Write(file string, force bool) error {
-	// convert struct to json
-	jsonData, err := json.MarshalIndent(document, "", "  ")
-	if err != nil {
-		return fmt.Errorf("unable to marshal json for file [%s] - %w", file, err)
+// Write writes the policy document data to a file.
+func (document *PolicyDocument) Write(file *files.JSON, force bool) error {
+	var options []files.Option
+	if force {
+		options = []files.Option{files.WithOverwrite}
 	}
 
-	// check if the file already exists
-	if _, err = os.Stat(file); os.IsNotExist(err) {
-		// write the file
-		err = os.WriteFile(file, jsonData, policyFilePermissions)
-		if err != nil {
-			return fmt.Errorf("unable to write file [%s] - %w", file, err)
-		}
-	}
-
-	// write the file only if force is requested
-	if !force {
-		return fmt.Errorf("unable to write file [%s]; use --force if you wish to overwrite", file)
-	}
-
-	if err := os.WriteFile(file, jsonData, policyFilePermissions); err != nil {
-		return fmt.Errorf("unable to write file [%s] - %w", file, err)
+	if err := file.Write(document, policyFilePermissions, options...); err != nil {
+		return fmt.Errorf("error writing file data - %w", err)
 	}
 
 	return nil

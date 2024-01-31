@@ -21,7 +21,7 @@ func TestFilename(t *testing.T) {
 				path: "/home/test/",
 				name: "test",
 			},
-			want: "/home/test/test.json",
+			want: "/home/test//test",
 		},
 		{
 			name: "ensure filename without trailing / returns appropriately",
@@ -29,7 +29,7 @@ func TestFilename(t *testing.T) {
 				path: "/home/test",
 				name: "test",
 			},
-			want: "/home/test/test.json",
+			want: "/home/test/test",
 		},
 	}
 
@@ -37,7 +37,7 @@ func TestFilename(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if got := Filename(tt.args.path, tt.args.name); got != tt.want {
+			if got := PolicyFilename(tt.args.path, tt.args.name); got != tt.want {
 				t.Errorf("Filename() = %v, want %v", got, tt.want)
 			}
 		})

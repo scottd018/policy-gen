@@ -8,19 +8,21 @@ import (
 	"github.com/nukleros/markers/parser"
 	"github.com/rs/zerolog"
 
+	"github.com/scottd018/policy-gen/internal/pkg/docs"
+	"github.com/scottd018/policy-gen/internal/pkg/files"
 	"github.com/scottd018/policy-gen/internal/pkg/input"
 )
 
 // MarkerProcessor represents the object used to process markers
 // for a file.
 type MarkerProcessor struct {
-	Input input.Input
+	Input *input.Processor
 	Log   zerolog.Logger
 }
 
 // NewMarkerProcessor instantiates a new instance of a markerProcessor
 // object.
-func NewMarkerProcessor(inputs input.Input) *MarkerProcessor {
+func NewMarkerProcessor(inputs *input.Processor) *MarkerProcessor {
 	level := zerolog.InfoLevel
 	if inputs.Debug {
 		level = zerolog.DebugLevel
@@ -37,7 +39,7 @@ func (processor *MarkerProcessor) Process() error {
 	// retrieve the marker results from the input path
 	results, err := processor.Parse()
 	if err != nil {
-		return fmt.Errorf("error parsing marker results from input path [%s] - %w", processor.Input.InputPath, err)
+		return fmt.Errorf("error parsing marker results from input path [%s] - %w", processor.Input.InputDirectory.Path, err)
 	}
 
 	// convert our file markers into aws markers
@@ -47,13 +49,39 @@ func (processor *MarkerProcessor) Process() error {
 	}
 
 	// process the markers and write the files
-	for file, document := range awsMarkers.PolicyFiles() {
-		filename := Filename(processor.Input.OutputPath, file)
+	for policyFile, document := range awsMarkers.PolicyFiles() {
+		rawFileName := PolicyFilename(processor.Input.OutputDirectory.Path, policyFile)
 
-		processor.Log.Info().Msgf("writing file: [%s]", filename)
+		// we do not need to pass the pre-existing directory option here because it
+		// was validated on input
+		jsonFile, err := files.NewJSONFile(rawFileName)
+		if err != nil {
+			return fmt.Errorf("error creating policy file object [%s] - %w", policyFile, err)
+		}
 
-		if err := document.Write(filename, processor.Input.Force); err != nil {
-			return err
+		processor.Log.Info().Msgf("writing policy file: [%s]", jsonFile.Path())
+
+		if err := document.Write(jsonFile, processor.Input.Force); err != nil {
+			return fmt.Errorf("error writing policy file [%s] - %w", jsonFile.Path(), err)
+		}
+	}
+
+	// write the documentation if it was requested
+	if processor.Input.DocumentationFile != nil && processor.Input.DocumentationFile.File != "" {
+		// create the documentation file
+		documentationFile, err := files.NewMarkdownFile(processor.Input.DocumentationFile.File)
+		if err != nil {
+			return fmt.Errorf("error creating markdown file object [%s] - %w", processor.Input.DocumentationFile.File, err)
+		}
+
+		processor.Log.Info().Msgf("writing documentation file: [%s]", documentationFile.Path())
+
+		// create the document
+		if err := docs.NewDocumentation(documentationFile).Write(
+			processor.Input.Force,
+			awsMarkers.ToDocumentRows()...,
+		); err != nil {
+			return fmt.Errorf("error writing documentation file [%s] - %w", documentationFile.Path(), err)
 		}
 	}
 
@@ -68,10 +96,9 @@ func (processor *MarkerProcessor) Parse() ([]*parser.Result, error) {
 	registry := markers.NewRegistry()
 
 	// define our marker
+	processor.Log.Info().Msgf("parsing markers: [%s]", MarkerDefinition())
 	definition, err := markers.Define(MarkerDefinition(), policyMarker)
 	if err != nil {
-		processor.Log.Info().Msgf("adding marker definition to registry: [%s]", MarkerDefinition())
-
 		return nil, fmt.Errorf("unable to create policy definition for marker [%s] - %w", MarkerDefinition(), err)
 	}
 
@@ -79,17 +106,16 @@ func (processor *MarkerProcessor) Parse() ([]*parser.Result, error) {
 	registry.Add(definition)
 
 	// collect the data from the given path
-	data, err := input.Collect(processor.Input.InputPath)
+	processor.Log.Info().Msgf("collecting input for path: [%s]", processor.Input.InputDirectory.Path)
+	data, err := processor.Input.InputDirectory.CollectData()
 	if err != nil {
-		processor.Log.Info().Msgf("collecting input for path: [%s]", processor.Input.InputPath)
-
 		return nil, fmt.Errorf("error collecting file data for marker [%s] - %w", MarkerDefinition(), err)
 	}
 
 	// run the parser
 	results := markers.NewParser(string(data), registry).Parse()
 	if len(results) == 0 {
-		processor.Log.Warn().Msgf("no results found for marker [%s] at path [%s]\n", MarkerDefinition(), processor.Input.InputPath)
+		processor.Log.Warn().Msgf("no results found for marker [%s] at path [%s]\n", MarkerDefinition(), processor.Input.InputDirectory.Path)
 
 		return []*parser.Result{}, nil
 	}

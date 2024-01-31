@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/scottd018/policy-gen/internal/pkg/constants"
+	"github.com/scottd018/policy-gen/internal/pkg/docs"
 )
 
 var (
@@ -32,6 +33,7 @@ type Marker struct {
 	Action   *string
 	Effect   *string
 	Resource *string
+	Reason   *string
 }
 
 type Markers []Marker
@@ -106,6 +108,18 @@ func (marker Marker) ToStatement() Statement {
 	}
 }
 
+// ToDocumentRows converts a Markers object to a set of document row interfaces.  This is needed
+// to display markers in documentation.
+func (m Markers) ToDocumentRows() []docs.Row {
+	markersSlice := make([]docs.Row, len(m))
+
+	for i := range m {
+		markersSlice[i] = &m[i]
+	}
+
+	return markersSlice
+}
+
 // PolicyFiles processes a set of markers into their output policy files.
 func (m Markers) PolicyFiles() PolicyFiles {
 	// markersByFile collects all of the markers that belong to a particular file.
@@ -143,4 +157,44 @@ func (m Markers) PolicyFiles() PolicyFiles {
 	}
 
 	return policyFiles
+}
+
+// EffectColumn returns the effect for the marker.  It is used to satisfy
+// the docs.Row interface.
+func (marker *Marker) EffectColumn() string {
+	if marker.Effect == nil {
+		return defaultStatementEffect
+	}
+
+	return *marker.Effect
+}
+
+// PermissionColumn returns the permission (action) for the marker.  It is used to satisfy
+// the docs.Row interface.
+func (marker *Marker) PermissionColumn() string {
+	if marker.Action == nil {
+		return ""
+	}
+
+	return *marker.Action
+}
+
+// ResourceColumn returns the applicable resource that this permission is valid for.  It
+// is used to satisfy the docs.Row interface.
+func (marker *Marker) ResourceColumn() string {
+	if marker.Resource == nil {
+		return defaultStatementResource
+	}
+
+	return *marker.Resource
+}
+
+// ReasonColumn returns the reason for the permission.  It is used to satisfy the docs.Row
+// interface.
+func (marker *Marker) ReasonColumn() string {
+	if marker.Reason == nil {
+		return ""
+	}
+
+	return *marker.Reason
 }
