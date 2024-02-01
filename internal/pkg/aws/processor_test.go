@@ -72,7 +72,7 @@ func Test_markerProcessor_Parse(t *testing.T) {
 			},
 			want: []*parser.Result{
 				{
-					MarkerText: "+policygen:aws:iam:policy:name=test,action=`ec2:DescribeVpcs`,reason=`test`\n",
+					MarkerText: "+policy-gen:aws:iam:policy:name=test,action=`ec2:DescribeVpcs`,reason=`test`\n",
 					Object: Marker{
 						Name:   pointers.String("test"),
 						Action: pointers.String("ec2:DescribeVpcs"),
@@ -80,7 +80,7 @@ func Test_markerProcessor_Parse(t *testing.T) {
 					},
 				},
 				{
-					MarkerText: "+policygen:aws:iam:policy:name=test,action=`ec2:Describe*`,effect=Deny,reason=`test`\n",
+					MarkerText: "+policy-gen:aws:iam:policy:name=test,action=`ec2:Describe*`,effect=Deny,reason=`test`\n",
 					Object: Marker{
 						Name:   pointers.String("test"),
 						Action: pointers.String("ec2:Describe*"),
@@ -89,7 +89,7 @@ func Test_markerProcessor_Parse(t *testing.T) {
 					},
 				},
 				{
-					MarkerText: "+policygen:aws:iam:policy:name=test,action=`iam:Describe*`,effect=Allow,resource=`arn:aws:iam::aws:policy/aws-service-role/*`,reason=`test`\n",
+					MarkerText: "+policy-gen:aws:iam:policy:name=test,action=`iam:Describe*`,effect=Allow,resource=`arn:aws:iam::aws:policy/aws-service-role/*`,reason=`test`\n",
 					Object: Marker{
 						Name:     pointers.String("test"),
 						Action:   pointers.String("iam:Describe*"),

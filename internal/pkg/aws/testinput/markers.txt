@@ -1,5 +1,5 @@
-# +policygen:aws:iam:policy:name=test,action=`ec2:DescribeVpcs`,reason=`test`
+# +policy-gen:aws:iam:policy:name=test,action=`ec2:DescribeVpcs`,reason=`test`
 
-//+policygen:aws:iam:policy:name=test,action=`ec2:Describe*`,effect=Deny,reason=`test`
+//+policy-gen:aws:iam:policy:name=test,action=`ec2:Describe*`,effect=Deny,reason=`test`
 
-+policygen:aws:iam:policy:name=test,action=`iam:Describe*`,effect=Allow,resource=`arn:aws:iam::aws:policy/aws-service-role/*`,reason=`test`
++policy-gen:aws:iam:policy:name=test,action=`iam:Describe*`,effect=Allow,resource=`arn:aws:iam::aws:policy/aws-service-role/*`,reason=`test`

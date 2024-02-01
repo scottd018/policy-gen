@@ -20,7 +20,7 @@ func Execute(command *cobra.Command) {
 // main executes the main program loop.
 func main() {
 	policygen := &cobra.Command{
-		Use:   "policygen",
+		Use:   "policy-gen",
 		Short: "Generate policies for public cloud providers",
 		Long:  `Generate policies for public cloud providers`,
 	}

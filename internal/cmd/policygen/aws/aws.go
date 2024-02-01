@@ -11,18 +11,18 @@ import (
 
 const awsPolicyGenExample = `
 # generate policies using sensible defaults
-policygen aws
+policy-gen aws
 
 # generate policies from files located at input path ./input and write 
 # discovered policies to output path ./output while forcefully overwriting
 # any overlapping policies in the ./output directory.
-policygen aws --input-path=./input --output-path=./output --force
+policy-gen aws --input-path=./input --output-path=./output --force
 
 # generate policies with debug logging
-policygen aws --debug
+policy-gen aws --debug
 
 # generate policies and associated documentation at ./output/README.md
-policygen aws --output-path=./output --documentation=README.md
+policy-gen aws --output-path=./output --documentation=README.md
 `
 
 func NewCommand() *cobra.Command {

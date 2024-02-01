@@ -1,5 +1,5 @@
 package constants
 
 const (
-	MarkerPrefix = "policygen"
+	MarkerPrefix = "policy-gen"
 )
