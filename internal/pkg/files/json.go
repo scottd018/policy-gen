@@ -28,49 +28,44 @@ func NewJSONFile(path string, options ...Option) (*JSON, error) {
 
 	// validate the file path
 	fileParts := strings.Split(filepath.Base(path), ".")
-	if len(fileParts) != 1 {
+	if len(fileParts) == 0 {
+		return nil, fmt.Errorf("invalid file path: [%s]", path)
+	} else if len(fileParts) > 2 {
 		return nil, fmt.Errorf("invalid file path: [%s]", path)
 	}
 
-	return &JSON{
+	file := &JSON{
 		Directory: directory,
 		File:      fileParts[0],
 		Extension: ExtensionJSON,
-	}, nil
+	}
+
+	// ensure we are not pointing at a directory path
+	dirInfo, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return file, nil
+	}
+
+	// check if it is actually a directory
+	if dirInfo.IsDir() {
+		return nil, fmt.Errorf("invalid file path; path is directory: [%s]", path)
+	}
+
+	return file, nil
 }
 
+// Path returns the full path value for a file.
 func (file *JSON) Path() string {
 	return Path(file.Directory, file.File, file.Extension)
 }
 
+// Write writes the JSON data, from an object, to a file.
 func (file *JSON) Write(object any, permissions fs.FileMode, options ...Option) error {
-	force := hasOption(WithOverwrite, options...)
-
-	// convert struct to json
-	jsonData, err := json.MarshalIndent(object, "", "  ")
+	// convert object to json
+	jsonData, err := json.MarshalIndent(object, "", "\t")
 	if err != nil {
 		return fmt.Errorf("unable to marshal json for file [%s] - %w", file.Path(), err)
 	}
 
-	// check if the file already exists
-	if _, err = os.Stat(file.Path()); os.IsNotExist(err) {
-		// write the file
-		err = os.WriteFile(file.Path(), jsonData, permissions)
-		if err != nil {
-			return fmt.Errorf("unable to write file [%s] - %w", file.Path(), err)
-		}
-
-		return nil
-	}
-
-	// write the file only if force is requested
-	if force {
-		if err := os.WriteFile(file.Path(), jsonData, permissions); err != nil {
-			return fmt.Errorf("unable to write file [%s] - %w", file.Path(), err)
-		}
-
-		return nil
-	}
-
-	return fmt.Errorf("cannot write file [%s] - file already exists", file.Path())
+	return Write(file.Path(), jsonData, permissions, options...)
 }

@@ -16,8 +16,11 @@ type Directory struct {
 
 func NewDirectory(path string, options ...Option) (*Directory, error) {
 	// trim the trailing / if we have one
-	directoryPath := strings.TrimSuffix(path, "/")
-	directoryPath = filepath.Clean(directoryPath)
+	directoryPath := path
+	if directoryPath != "/" {
+		directoryPath = strings.TrimSuffix(path, "/")
+		directoryPath = filepath.Clean(directoryPath)
+	}
 
 	// if we have requested pre-existing directory validation, check to ensure
 	// it is valid
