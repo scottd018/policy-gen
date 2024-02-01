@@ -90,13 +90,14 @@ func (processor *MarkerProcessor) Process() error {
 
 // Parse parses a set of markers from a given path and returns the results.
 func (processor *MarkerProcessor) Parse() ([]*parser.Result, error) {
+	processor.Log.Info().Msgf("parsing markers: [%s]", MarkerDefinition())
+
 	policyMarker := Marker{}
 
 	// create a registry for our field markers
 	registry := markers.NewRegistry()
 
 	// define our marker
-	processor.Log.Info().Msgf("parsing markers: [%s]", MarkerDefinition())
 	definition, err := markers.Define(MarkerDefinition(), policyMarker)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create policy definition for marker [%s] - %w", MarkerDefinition(), err)
@@ -105,8 +106,9 @@ func (processor *MarkerProcessor) Parse() ([]*parser.Result, error) {
 	// add the marker to the registry
 	registry.Add(definition)
 
-	// collect the data from the given path
 	processor.Log.Info().Msgf("collecting input for path: [%s]", processor.Input.InputDirectory.Path)
+
+	// collect the data from the given path
 	data, err := processor.Input.InputDirectory.CollectData()
 	if err != nil {
 		return nil, fmt.Errorf("error collecting file data for marker [%s] - %w", MarkerDefinition(), err)

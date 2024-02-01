@@ -3,8 +3,9 @@ package input
 import (
 	"fmt"
 
-	"github.com/scottd018/policy-gen/internal/pkg/files"
 	"github.com/spf13/cobra"
+
+	"github.com/scottd018/policy-gen/internal/pkg/files"
 )
 
 const (

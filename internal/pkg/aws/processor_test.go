@@ -72,27 +72,30 @@ func Test_markerProcessor_Parse(t *testing.T) {
 			},
 			want: []*parser.Result{
 				{
-					MarkerText: "+policygen:aws:iam:policy:name=test,action=`ec2:DescribeVpcs`\n",
+					MarkerText: "+policygen:aws:iam:policy:name=test,action=`ec2:DescribeVpcs`,reason=`test`\n",
 					Object: Marker{
 						Name:   pointers.String("test"),
 						Action: pointers.String("ec2:DescribeVpcs"),
+						Reason: pointers.String("test"),
 					},
 				},
 				{
-					MarkerText: "+policygen:aws:iam:policy:name=test,action=`ec2:Describe*`,effect=Deny\n",
+					MarkerText: "+policygen:aws:iam:policy:name=test,action=`ec2:Describe*`,effect=Deny,reason=`test`\n",
 					Object: Marker{
 						Name:   pointers.String("test"),
 						Action: pointers.String("ec2:Describe*"),
 						Effect: pointers.String(ValidEffectDeny),
+						Reason: pointers.String("test"),
 					},
 				},
 				{
-					MarkerText: "+policygen:aws:iam:policy:name=test,action=`iam:Describe*`,effect=Allow,resource=`arn:aws:iam::aws:policy/aws-service-role/*`\n",
+					MarkerText: "+policygen:aws:iam:policy:name=test,action=`iam:Describe*`,effect=Allow,resource=`arn:aws:iam::aws:policy/aws-service-role/*`,reason=`test`\n",
 					Object: Marker{
 						Name:     pointers.String("test"),
 						Action:   pointers.String("iam:Describe*"),
 						Effect:   pointers.String(ValidEffectAllow),
 						Resource: pointers.String("arn:aws:iam::aws:policy/aws-service-role/*"),
+						Reason:   pointers.String("test"),
 					},
 				},
 			},

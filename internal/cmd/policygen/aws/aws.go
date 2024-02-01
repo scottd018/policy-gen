@@ -13,7 +13,7 @@ const awsPolicyGenExample = `
 # generate policies using sensible defaults
 policygen aws
 
-# generate policies from files at located at input path ./input and write 
+# generate policies from files located at input path ./input and write 
 # discovered policies to output path ./output while forcefully overwriting
 # any overlapping policies in the ./output directory.
 policygen aws --input-path=./input --output-path=./output --force
@@ -33,19 +33,14 @@ func NewCommand() *cobra.Command {
 		Use:     "aws",
 		Short:   "Generate AWS IAM policies",
 		Long:    `Generate AWS IAM policies`,
-		PreRunE: func(cmd *cobra.Command, args []string) error { return setup(flags) },
 		RunE:    func(cmd *cobra.Command, args []string) error { return run(flags) },
 		Example: awsPolicyGenExample,
 	}
 
-	// add flags
+	// initialize the flags
 	flags.Initialize(command)
 
 	return command
-}
-
-func setup(flags input.Flags) error {
-	return nil
 }
 
 func run(flags input.Flags) error {

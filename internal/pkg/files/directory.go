@@ -38,10 +38,10 @@ func NewDirectory(path string, options ...Option) (*Directory, error) {
 }
 
 // CollectData recursively collects all data as an []byte from a given directory.
-func (directory *Directory) CollectData() ([]byte, error) {
+func (dir *Directory) CollectData() ([]byte, error) {
 	var result []byte
 
-	err := filepath.Walk(directory.Path, func(filePath string, info os.FileInfo, err error) error {
+	err := filepath.Walk(dir.Path, func(filePath string, info os.FileInfo, err error) error {
 		// return any errors
 		if err != nil {
 			return err

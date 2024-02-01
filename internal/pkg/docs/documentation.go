@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/olekukonko/tablewriter"
+
 	"github.com/scottd018/policy-gen/internal/pkg/files"
 )
 
