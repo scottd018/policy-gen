@@ -68,20 +68,14 @@ func (processor *MarkerProcessor) Process() error {
 
 	// write the documentation if it was requested
 	if processor.Input.DocumentationFile != nil && processor.Input.DocumentationFile.File != "" {
-		// create the documentation file
-		documentationFile, err := files.NewMarkdownFile(processor.Input.DocumentationFile.File)
-		if err != nil {
-			return fmt.Errorf("error creating markdown file object [%s] - %w", processor.Input.DocumentationFile.File, err)
-		}
-
-		processor.Log.Info().Msgf("writing documentation file: [%s]", documentationFile.Path())
+		processor.Log.Info().Msgf("writing documentation file: [%s]", processor.Input.DocumentationFile.Path())
 
 		// create the document
-		if err := docs.NewDocumentation(documentationFile).Write(
+		if err := docs.NewDocumentation(processor.Input.DocumentationFile).Write(
 			processor.Input.Force,
 			awsMarkers.ToDocumentRows()...,
 		); err != nil {
-			return fmt.Errorf("error writing documentation file [%s] - %w", documentationFile.Path(), err)
+			return fmt.Errorf("error writing documentation file [%s] - %w", processor.Input.DocumentationFile.Path(), err)
 		}
 	}
 
