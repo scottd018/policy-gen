@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/scottd018/policy-gen/internal/cmd/policygen/aws"
+	"github.com/scottd018/policy-gen/internal/cmd/policygen/version"
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -26,5 +27,6 @@ func main() {
 	}
 
 	policygen.AddCommand(aws.NewCommand())
+	policygen.AddCommand(version.NewCommand())
 	Execute(policygen)
 }
