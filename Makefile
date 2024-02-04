@@ -12,7 +12,7 @@ test-commit:
 	scripts/commit-check-latest.sh
 
 test-unit:
-	mkdir -p bin/ ;\
+	mkdir -p bin/ internal/pkg/aws/testoutput internal/files/testoutput ;\
 		go test -cover -coverprofile=./bin/coverage.out ./...
 
 test-functional-aws:
