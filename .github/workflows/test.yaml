@@ -1,0 +1,110 @@
+---
+name: Test
+on:
+  - pull_request
+  - push
+
+jobs:
+  #
+  # unit testing
+  #
+  unit-test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - go-version: "1.21"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Run Unit Test
+        run: make test-unit
+
+  #
+  # build and store artifact
+  #
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: unit-test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - go-version: "1.21"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Build Binary Artifact (policy-gen)
+        run: make build
+
+      - name: Store Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: policy-gen
+          path: bin/policy-gen
+
+  #
+  # e2e test
+  #
+  e2e-test:
+    name: E2E Test
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test-name: aws
+            test-output-path: internal/pkg/aws/testoutput
+    services:
+      localstack:
+        image: localstack/localstack:3.1.0
+        ports:
+          - 4566:4566
+    env:
+      AWS_ACCESS_KEY_ID: "thisisfake"
+      AWS_SECRET_ACCESS_KEY: "thisisfake"
+      AWS_ENDPOINT_URL: "localhost:4566"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download policy-gen Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: policy-gen
+          path: bin
+
+      - name: Run ${{ matrix.test-name }} Functional Test
+        run: make test-functional-${{ matrix.test-name}}
+
+      - name: Run ${{ matrix.test-name }} E2E Test
+        run: make test-e2e-${{ matrix.test-name}}
+
+      - name: Store ${{ matrix.test-name }} Output
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.test-name }}
+          path: ${{ matrix.test-output-path }}
