@@ -11,10 +11,10 @@ var (
 )
 
 type Statement struct {
-	SID       string   `json:"SID"`
+	SID       string   `json:"Sid"`
 	Effect    string   `json:"Effect"`
 	Action    []string `json:"Action"`
-	Resources []string `json:"Resources"`
+	Resources []string `json:"Resource"`
 }
 
 type Statements []Statement

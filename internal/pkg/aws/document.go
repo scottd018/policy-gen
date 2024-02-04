@@ -15,7 +15,7 @@ const (
 // PolicyDocument represents an individual AWS IAM policy document.
 type PolicyDocument struct {
 	Version    string     `json:"Version"`
-	Statements Statements `json:"Statements"`
+	Statements Statements `json:"Statement"`
 }
 
 // NewPolicyDocument creates a new policy document from a set of markers.

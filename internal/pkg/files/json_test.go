@@ -167,8 +167,8 @@ func TestJSON_Write(t *testing.T) {
 			},
 			wantErr: false,
 			wantData: `{
-	"id": "test",
-	"name": "test"
+    "id": "test",
+    "name": "test"
 }`,
 		},
 	}

@@ -62,7 +62,7 @@ func (file *JSON) Path() string {
 // Write writes the JSON data, from an object, to a file.
 func (file *JSON) Write(object any, permissions fs.FileMode, options ...Option) error {
 	// convert object to json
-	jsonData, err := json.MarshalIndent(object, "", "\t")
+	jsonData, err := json.MarshalIndent(object, "", "    ")
 	if err != nil {
 		return fmt.Errorf("unable to marshal json for file [%s] - %w", file.Path(), err)
 	}
