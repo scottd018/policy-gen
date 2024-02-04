@@ -97,7 +97,9 @@ jobs:
           path: bin
 
       - name: Run ${{ matrix.test-name }} Functional Test
-        run: make test-functional-${{ matrix.test-name}}
+        run: |
+          chmod +x bin/policy-gen
+          make test-functional-${{ matrix.test-name}}
 
       - name: Run ${{ matrix.test-name }} E2E Test
         run: make test-e2e-${{ matrix.test-name}}
