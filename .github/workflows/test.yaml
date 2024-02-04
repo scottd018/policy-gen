@@ -83,7 +83,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: "thisisfake"
       AWS_SECRET_ACCESS_KEY: "thisisfake"
-      AWS_ENDPOINT_URL: "localhost:4566"
+      AWS_ENDPOINT_URL: "http://localhost:4566"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
