@@ -5,7 +5,7 @@
 # CI tools expect an interactive shell inside the container
 FROM alpine:latest as production
 
-COPY bin/policy-gen /usr/bin/policy-gen
+COPY policy-gen /usr/bin/policy-gen
 RUN chmod +x /usr/bin/policy-gen
 
 WORKDIR /workdir
