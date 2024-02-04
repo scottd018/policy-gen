@@ -28,9 +28,16 @@ func NewMarkerProcessor(inputs *input.Processor) *MarkerProcessor {
 		level = zerolog.DebugLevel
 	}
 
+	logger := zerolog.ConsoleWriter{
+		Out: os.Stdout,
+		PartsExclude: []string{
+			"time",
+		},
+	}
+
 	return &MarkerProcessor{
 		Input: inputs,
-		Log:   zerolog.New(os.Stdout).With().Timestamp().Logger().Level(level),
+		Log:   zerolog.New(logger).With().Timestamp().Logger().Level(level),
 	}
 }
 
