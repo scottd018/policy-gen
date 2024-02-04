@@ -16,12 +16,13 @@ test-unit:
 		go test -cover -coverprofile=./bin/coverage.out ./...
 
 test-functional-aws:
-	bin/policy-gen aws \
-		--input-path=internal/pkg/aws/testinput \
-		--output-path=internal/pkg/aws/testoutput \
-		--documentation=internal/pkg/aws/testoutput/README.md \
-		--force \
-		--debug
+	mkdir -p bin/ internal/pkg/aws/testoutput internal/pkg/files/testoutput ;\
+		bin/policy-gen aws \
+			--input-path=internal/pkg/aws/testinput \
+			--output-path=internal/pkg/aws/testoutput \
+			--documentation=internal/pkg/aws/testoutput/README.md \
+			--force \
+			--debug
 
 test-e2e-start-aws:
 	docker run \

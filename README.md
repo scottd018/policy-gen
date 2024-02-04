@@ -32,6 +32,7 @@ Installation of this project can be done via direct download, or via `brew`:
 *Direct Download*:
 
 ```
+curl -L https://github.com/scottd018/policy-gen/releases/download/latest/policy-gen -o /usr/local/bin/policy-gen
 ```
 
 *Brew*:
