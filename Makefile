@@ -12,7 +12,8 @@ test-commit:
 	scripts/commit-check-latest.sh
 
 test-unit:
-	go test -cover -coverprofile=./bin/coverage.out ./...
+	mkdir -p bin/ ;\
+		go test -cover -coverprofile=./bin/coverage.out ./...
 
 test-functional-aws:
 	bin/policy-gen aws \
