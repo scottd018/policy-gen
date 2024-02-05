@@ -32,7 +32,11 @@ Installation of this project can be done via direct download, or via `brew`:
 *Direct Download*:
 
 ```
-curl -L https://github.com/scottd018/policy-gen/releases/download/latest/policy-gen -o /usr/local/bin/policy-gen
+VERSION=v0.0.1
+OS=Linux
+ARCH=x86_64
+wget https://github.com/scottd018/policy-gen/releases/download/${VERSION}/policy-gen_v${VERSION}_${OS}_${ARCH}.tar.gz -O - |\
+    tar -xz && sudo mv policy-gen /usr/local/bin/policy-gen
 ```
 
 *Brew*:
