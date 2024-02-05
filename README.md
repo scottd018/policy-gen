@@ -70,23 +70,23 @@ my application.  The code, including markers (see [markers](#markers)), looks li
 ```go
 // Create creates an AWS VPC.
 func (v *vpc) Create(ctx context.Context, client client.Cloud) error {
-	// create the vpc
-	cidrString := v.CIDR.String()
-	input := &ec2.CreateVpcInput{
-		CidrBlock:         &cidrString,
-		TagSpecifications: tags.Specifications(v, tags.WithAdditional(v, v.Config.Tags)...),
-	}
+    // create the vpc
+    cidrString := v.CIDR.String()
+    input := &ec2.CreateVpcInput{
+        CidrBlock:         &cidrString,
+        TagSpecifications: tags.Specifications(v, tags.WithAdditional(v, v.Config.Tags)...),
+    }
 
     // +policy-gen:aws:iam:policy:name=createvpc,action=`ec2:CreateVpc*`,effect=Allow,reason=`User needs to init a 
     // VPC where this application resides in.`
-	output, err := client.AWS().EC2().CreateVpc(ctx, input)
-	if err != nil {
-		return resources.CreateError(v, err)
-	}
+    output, err := client.AWS().EC2().CreateVpc(ctx, input)
+    if err != nil {
+	    return resources.CreateError(v, err)
+    }
 
-	v.Object = output.Vpc
+    v.Object = output.Vpc
 
-	return nil
+    return nil
 }
 ```
 
