@@ -4,9 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
+	"unicode"
 
-	"github.com/scottd018/policy-gen/internal/pkg/constants"
+	"github.com/scottd018/go-utils/pkg/pointers"
+
 	"github.com/scottd018/policy-gen/internal/pkg/docs"
+	"github.com/scottd018/policy-gen/internal/pkg/policymarkers"
 )
 
 var (
@@ -14,10 +18,12 @@ var (
 	ErrMarkerMissingAction      = errors.New("marker missing action field")
 	ErrMarkerInvalidEffect      = errors.New("invalid marker effect")
 	ErrMarkerInvalidStatementID = errors.New("invalid statement id - must contain a-z, A-Z, 0-9 and limited to 64 characters")
+	ErrMarkerInvalidName        = errors.New("invalid name - must contain only lowercase alphanumeric characters and limited to 64 characters")
 )
 
 const (
 	awsMarkerDefinition = "aws:iam:policy"
+	nameRegex           = "^[a-z0-9]{1,64}$"
 
 	ValidEffectAllow = "Allow"
 	ValidEffectDeny  = "Deny"
@@ -40,11 +46,18 @@ type Markers []Marker
 
 // MarkerDefinition returns the marker definition for an AWS IAM policy marker.
 func MarkerDefinition() string {
-	return fmt.Sprintf("+%s:%s", constants.MarkerPrefix, awsMarkerDefinition)
+	return fmt.Sprintf("+%s:%s", policymarkers.Prefix, awsMarkerDefinition)
 }
 
-// Validate validates that a marker is valid.
-func (marker Marker) Validate() error {
+// Definition returns the marker definition for an AWS IAM policy marker.  It is used
+// as a way to return the definition as part of the policymarkers.Marker interface.
+func (marker *Marker) Definition() string {
+	return MarkerDefinition()
+}
+
+// Validate validates that a marker is valid.  It is used to satisfy the policymarkers.Marker
+// interface.
+func (marker *Marker) Validate() error {
 	// ensure required markers are set
 	for err, markerField := range map[error]*string{
 		ErrMarkerMissingName:   marker.Name,
@@ -59,11 +72,19 @@ func (marker Marker) Validate() error {
 		}
 	}
 
+	// ensure the name only contains lowercase characters with underscores and is limited
+	// to 64 characters in length.  this is because we are generating file names based upon
+	// the policy name and grouping those with like names together into separate policy
+	// files.
+	nameCheck := regexp.MustCompile(nameRegex)
+	if !nameCheck.MatchString(*marker.Name) {
+		return fmt.Errorf("%w - [%s]", ErrMarkerInvalidName, *marker.Name)
+	}
+
 	// ensure the sid is valid if specified
 	if marker.Id != nil {
-		regex := regexp.MustCompile(statementIDRegex)
-
-		if !regex.MatchString(*marker.Id) {
+		statementIDCheck := regexp.MustCompile(statementIDRegex)
+		if !statementIDCheck.MatchString(*marker.Id) {
 			return fmt.Errorf("%w - [%s]", ErrMarkerInvalidStatementID, *marker.Id)
 		}
 	}
@@ -80,7 +101,8 @@ func (marker Marker) Validate() error {
 	return nil
 }
 
-// WithDefault sets a marker with its default values.
+// WithDefault sets a marker with its default values.  It is used to satisfy the policymarkers.Marker
+// interface.
 func (marker *Marker) WithDefault() {
 	// add the effect if we specified one otherwise default to allow
 	if marker.Effect == nil {
@@ -96,6 +118,16 @@ func (marker *Marker) WithDefault() {
 	if marker.Id == nil {
 		marker.Id = &defaultStatementID
 	}
+}
+
+// GetName returns the name of the marker.  It is used to satisfy the policymarkers.Marker
+// interface.
+func (marker *Marker) GetName() string {
+	if marker.Name == nil {
+		return ""
+	}
+
+	return *marker.Name
 }
 
 // ToStatement converts a marker to an AWS IAM policy statement.
@@ -120,44 +152,44 @@ func (m Markers) ToDocumentRows() []docs.Row {
 	return markersSlice
 }
 
-// PolicyFiles processes a set of markers into their output policy files.
-func (m Markers) PolicyFiles() PolicyFiles {
-	// markersByFile collects all of the markers that belong to a particular file.
-	markersByFile := map[string][]Marker{}
+// // PolicyFiles processes a set of markers into their output policy files.
+// func (m Markers) PolicyFiles() PolicyFiles {
+// 	// markersByFile collects all of the markers that belong to a particular file.
+// 	markersByFile := map[string][]Marker{}
 
-	// collect all of the markers that belong to a particular file and then store
-	// them in the markersByFile map.
-	for _, marker := range m {
-		// ensure default values for the marker
-		marker.WithDefault()
+// 	// collect all of the markers that belong to a particular file and then store
+// 	// them in the markersByFile map.
+// 	for _, marker := range m {
+// 		// ensure default values for the marker
+// 		marker.WithDefault()
 
-		// if the map is nil, add the marker to the array
-		if markersByFile[*marker.Name] == nil {
-			markersByFile[*marker.Name] = []Marker{marker}
+// 		// if the map is nil, add the marker to the array
+// 		if markersByFile[*marker.Name] == nil {
+// 			markersByFile[*marker.Name] = []Marker{marker}
 
-			continue
-		}
+// 			continue
+// 		}
 
-		// if the array is flat, this marker as the first in the array
-		if len(markersByFile[*marker.Name]) == 0 {
-			markersByFile[*marker.Name] = []Marker{marker}
+// 		// if the array is flat, this marker as the first in the array
+// 		if len(markersByFile[*marker.Name]) == 0 {
+// 			markersByFile[*marker.Name] = []Marker{marker}
 
-			continue
-		}
+// 			continue
+// 		}
 
-		// append the marker to the current list of markers
-		markersByFile[*marker.Name] = append(markersByFile[*marker.Name], marker)
-	}
+// 		// append the marker to the current list of markers
+// 		markersByFile[*marker.Name] = append(markersByFile[*marker.Name], marker)
+// 	}
 
-	// create a new policy file for each unique key in the markersByFile map
-	policyFiles := PolicyFiles{}
+// 	// create a new policy file for each unique key in the markersByFile map
+// 	policyFiles := PolicyFiles{}
 
-	for filename, markers := range markersByFile {
-		policyFiles[filename] = NewPolicyDocument(markers...)
-	}
+// 	for filename, markers := range markersByFile {
+// 		policyFiles[filename] = NewPolicyDocument(markers...)
+// 	}
 
-	return policyFiles
-}
+// 	return policyFiles
+// }
 
 // EffectColumn returns the effect for the marker.  It is used to satisfy
 // the docs.Row interface.
@@ -197,4 +229,30 @@ func (marker *Marker) ReasonColumn() string {
 	}
 
 	return *marker.Reason
+}
+
+// AdjustID adjusts an ID for situations where a conflict arises.
+func (marker *Marker) AdjustID() {
+	// this collects the tailing integers on the current id
+	var tailing string
+
+	// loop until we do not find a trailing integer
+	for i := len(*marker.Id) - 1; i >= 0; i-- {
+		id := *marker.Id
+
+		// break the loop if we found a non-integer
+		if !unicode.IsDigit(rune(id[i])) {
+			break
+		}
+
+		// collect the integer and store it
+		tailing = fmt.Sprintf("%s%s", string(id[i]), tailing)
+	}
+
+	// add to the collected value
+	value, _ := strconv.Atoi(tailing)
+	value += 1
+
+	// set the id
+	marker.Id = pointers.String(fmt.Sprintf("%s%d", *marker.Id, value))
 }

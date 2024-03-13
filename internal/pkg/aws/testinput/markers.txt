@@ -3,3 +3,7 @@
 //+policy-gen:aws:iam:policy:name=test,action=`ec2:Describe*`,effect=Deny,reason=`test`
 
 +policy-gen:aws:iam:policy:name=test,action=`iam:Describe*`,effect=Allow,resource=`arn:aws:iam::aws:policy/aws-service-role/*`,reason=`test`
+
++policy-gen:aws:iam:policy:name=test,action=`s3:*`,effect=Allow,resource=`*`,reason=`test s3`
+
++policy-gen:aws:iam:policy:name=test,action=`ecr:*`,effect=Allow,resource=`*`,reason=`test ecr`

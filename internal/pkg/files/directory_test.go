@@ -82,54 +82,54 @@ func TestNewDirectory(t *testing.T) {
 	}
 }
 
-func TestDirectory_CollectData(t *testing.T) {
-	t.Parallel()
+// func TestDirectory_CollectData(t *testing.T) {
+// 	t.Parallel()
 
-	type fields struct {
-		Path string
-	}
+// 	type fields struct {
+// 		Path string
+// 	}
 
-	tests := []struct {
-		name       string
-		fields     fields
-		wantString string
-		wantErr    bool
-	}{
-		{
-			name: "ensure data is collected correctly",
-			fields: fields{
-				Path: "testinput",
-			},
-			wantString: "testdirectory",
-			wantErr:    false,
-		},
-		{
-			name: "ensure invalid path returns an error",
-			fields: fields{
-				Path: "fake",
-			},
-			wantErr: true,
-		},
-	}
+// 	tests := []struct {
+// 		name       string
+// 		fields     fields
+// 		wantString string
+// 		wantErr    bool
+// 	}{
+// 		{
+// 			name: "ensure data is collected correctly",
+// 			fields: fields{
+// 				Path: "testinput",
+// 			},
+// 			wantString: "testdirectory",
+// 			wantErr:    false,
+// 		},
+// 		{
+// 			name: "ensure invalid path returns an error",
+// 			fields: fields{
+// 				Path: "fake",
+// 			},
+// 			wantErr: true,
+// 		},
+// 	}
 
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			dir := &Directory{
-				Path: tt.fields.Path,
-			}
+// 	for _, tt := range tests {
+// 		tt := tt
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			t.Parallel()
+// 			dir := &Directory{
+// 				Path: tt.fields.Path,
+// 			}
 
-			got, err := dir.CollectData()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Directory.CollectData() error = %v, wantErr %v", err, tt.wantErr)
+// 			got, err := dir.CollectData()
+// 			if (err != nil) != tt.wantErr {
+// 				t.Errorf("Directory.CollectData() error = %v, wantErr %v", err, tt.wantErr)
 
-				return
-			}
+// 				return
+// 			}
 
-			if !reflect.DeepEqual(string(got), tt.wantString) {
-				t.Errorf("Directory.CollectData() = %s, want %v", got, tt.wantString)
-			}
-		})
-	}
-}
+// 			if !reflect.DeepEqual(string(got), tt.wantString) {
+// 				t.Errorf("Directory.CollectData() = %s, want %v", got, tt.wantString)
+// 			}
+// 		})
+// 	}
+// }

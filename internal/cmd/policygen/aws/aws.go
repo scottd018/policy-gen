@@ -7,6 +7,7 @@ import (
 
 	"github.com/scottd018/policy-gen/internal/pkg/aws"
 	"github.com/scottd018/policy-gen/internal/pkg/input"
+	"github.com/scottd018/policy-gen/internal/pkg/processor"
 )
 
 const awsPolicyGenExample = `
@@ -44,12 +45,24 @@ func NewCommand() *cobra.Command {
 }
 
 func run(flags input.Flags) error {
-	processorInputs, err := flags.Process()
+	// convert our user input into a configuration for the processor
+	config, err := flags.ToProcessorConfig()
 	if err != nil {
-		return fmt.Errorf("unable to process flags - %w", err)
+		return fmt.Errorf("unable to convert flags into a processor config - %w", err)
 	}
 
-	processor := aws.NewMarkerProcessor(processorInputs)
+	// create the processor
+	processor, err := processor.NewProcessor(
+		config,
+		aws.MarkerDefinition(),
+		aws.Marker{},
+		&aws.PolicyFileGenerator{Directory: config.OutputDirectory},
+	)
+	if err != nil {
+		return err
+	}
+
+	// execute
 	if err := processor.Process(); err != nil {
 		return fmt.Errorf("unable to process markers - %w", err)
 	}

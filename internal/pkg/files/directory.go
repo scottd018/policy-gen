@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/scottd018/go-utils/pkg/directory"
 )
@@ -40,38 +39,46 @@ func NewDirectory(path string, options ...Option) (*Directory, error) {
 	}, nil
 }
 
-// CollectData recursively collects all data as an []byte from a given directory.
-func (dir *Directory) CollectData() ([]byte, error) {
-	var result []byte
+// ListFilePaths lists file paths within a directory.
+func (dir *Directory) ListFilePaths(recursive bool) ([]string, error) {
+	paths := []string{}
 
-	err := filepath.Walk(dir.Path, func(filePath string, info os.FileInfo, err error) error {
-		// return any errors
-		if err != nil {
-			return err
-		}
+	// if recursive was requested walk the file path and get any regular files
+	if recursive {
+		err := filepath.Walk(dir.Path, func(path string, info os.FileInfo, err error) error {
+			// return any errors
+			if err != nil {
+				return err
+			}
 
-		// skip directories and symlinks
-		if info.IsDir() || (info.Mode()&os.ModeSymlink) == os.ModeSymlink {
+			// skip any non-regular files
+			if !info.Mode().IsRegular() {
+				return nil
+			}
+
+			paths = append(paths, path)
+
 			return nil
-		}
+		})
 
-		// read in the file
-		fileContent, err := os.ReadFile(filePath)
 		if err != nil {
-			return fmt.Errorf("unable to read file [%s] - %w", filePath, err)
+			return nil, fmt.Errorf("unable to recursively collect file paths - %w", err)
 		}
 
-		// only append text file content
-		if utf8.Valid(fileContent) {
-			result = append(result, fileContent...)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("unable to recursively collect file input - %w", err)
+		return paths, nil
 	}
 
-	return result, nil
+	// read only the files within this flat directory structure
+	files, err := os.ReadDir(dir.Path)
+	if err != nil {
+		return paths, fmt.Errorf("unable to list files for directory [%s] - %w", dir.Path, err)
+	}
+
+	for path := range files {
+		if files[path].Type().IsRegular() {
+			paths = append(paths, files[path].Name())
+		}
+	}
+
+	return paths, nil
 }

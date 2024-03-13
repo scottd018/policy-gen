@@ -6,31 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/scottd018/policy-gen/internal/pkg/files"
-)
-
-const (
-	FlagInputPath     = "input-path"
-	FlagOutputPath    = "output-path"
-	FlagDocumentation = "documentation"
-	FlagForce         = "force"
-	FlagDebug         = "debug"
-
-	FlagInputPathShort     = "i"
-	FlagOutputPathShort    = "o"
-	FlagDocumentationShort = "d"
-	FlagForceShort         = "f"
-
-	FlagInputPathDefault     = "./"
-	FlagOutputPathDefault    = "./"
-	FlagDocumentationDefault = ""
-	FlagForceDefault         = false
-	FlagDebugDefault         = false
-
-	FlagInputPathDescription     = "Input path to recursively begin parsing markers"
-	FlagOutputPathDescription    = "Output path to output generated policies"
-	FlagDocumentationDescription = "Documentation file to write"
-	FlagForceDescription         = "Forcefully overwrite files with matching names"
-	FlagDebugDescription         = "Enable debug logging"
+	"github.com/scottd018/policy-gen/internal/pkg/processor"
 )
 
 // FlagInput represents an individual flag value as determined from user input.
@@ -87,6 +63,15 @@ func NewFlags() Flags {
 				command.Flags().BoolVarP(&input.BooleanValue, FlagForce, input.Short, input.BooleanDefault, input.Description)
 			},
 		},
+		FlagRecursive: &FlagInput{
+			BooleanDefault: FlagRecursiveDefault,
+			Description:    FlagRecursiveDescription,
+			Short:          FlagRecursiveShort,
+			Required:       false,
+			CommandFunc: func(command *cobra.Command, input *FlagInput) {
+				command.Flags().BoolVarP(&input.BooleanValue, FlagRecursive, input.Short, input.BooleanDefault, input.Description)
+			},
+		},
 		FlagDebug: &FlagInput{
 			BooleanDefault: FlagDebugDefault,
 			Description:    FlagDebugDescription,
@@ -105,8 +90,8 @@ func (flags Flags) Initialize(command *cobra.Command) {
 	}
 }
 
-// Process processes the raw input flags validates them, and converts them to an input processor.
-func (flags Flags) Process() (*Processor, error) {
+// ToProcessorConfig processes the raw input flags validates them, and converts them to an processor configuration.
+func (flags Flags) ToProcessorConfig() (*processor.Config, error) {
 	// ensure required string values have values set
 	for flag, input := range flags {
 		if input.Required && input.StringValue == "" {
@@ -126,17 +111,17 @@ func (flags Flags) Process() (*Processor, error) {
 	}
 
 	// validate existence of file objects and add them to the processor
-	var documentationFile *files.Markdown
+	var documentationFile *files.File
 
 	documentationInput := flags.For(FlagDocumentation).StringValue
 	if documentationInput != "" {
-		documentationFile, err = files.NewMarkdownFile(documentationInput, files.WithPreExistingDirectory)
+		documentationFile, err = files.NewFile(documentationInput, files.WithPreExistingDirectory)
 		if err != nil {
 			return nil, fmt.Errorf("invalid flag: [--%s] - %w", FlagDocumentation, err)
 		}
 	}
 
-	return &Processor{
+	return &processor.Config{
 		InputDirectory:    inputDirectory,
 		OutputDirectory:   outputDirectory,
 		DocumentationFile: documentationFile,

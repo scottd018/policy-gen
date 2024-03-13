@@ -3,7 +3,6 @@ package docs
 import (
 	"bytes"
 	"errors"
-	"fmt"
 
 	"github.com/olekukonko/tablewriter"
 
@@ -15,29 +14,22 @@ var (
 )
 
 const (
-	HeaderEffect     = "effect"
-	HeaderPermission = "permission"
-	HeaderResource   = "resource"
-	HeaderReason     = "reason"
-
 	DocumentationMarkdownHeader  = "# Policy Justification\n\nThis file contains justification for access policies needed by this project.\n\n"
 	DocumentationFilePermissions = 0600
 )
 
 type Documentation struct {
-	File *files.Markdown
-	Data []byte
+	File *files.File
 }
 
-func NewDocumentation(file *files.Markdown) *Documentation {
-	return &Documentation{
-		File: file,
-		Data: []byte(DocumentationMarkdownHeader),
-	}
+func NewDocumentation(file *files.File) *Documentation {
+	file.Content = append(file.Content, []byte(DocumentationMarkdownHeader)...)
+
+	return &Documentation{File: file}
 }
 
-// Write writes documentation for a Row definition.
-func (docs *Documentation) Write(force bool, rows ...Row) error {
+// Generate generates a document from a set of rows.
+func (docs *Documentation) Generate(rows ...Row) error {
 	// ensure our documentation has a file name set
 	if docs.File.Path() == "" {
 		return ErrMissingFilename
@@ -47,7 +39,7 @@ func (docs *Documentation) Write(force bool, rows ...Row) error {
 	tableBytes := &bytes.Buffer{}
 
 	table := tablewriter.NewWriter(tableBytes)
-	table.SetHeader(header())
+	table.SetHeader(Header())
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 
@@ -67,29 +59,7 @@ func (docs *Documentation) Write(force bool, rows ...Row) error {
 	table.Render()
 
 	// append the rendered data to the existing data
-	docs.Data = append(docs.Data, tableBytes.Bytes()...)
-
-	// set the file options
-	var options []files.Option
-	if force {
-		options = []files.Option{files.WithOverwrite}
-	}
-
-	// write the file
-	if err := docs.File.Write(docs.Data, DocumentationFilePermissions, options...); err != nil {
-		return fmt.Errorf("error writing file object [%s] - %w", docs.File.Path(), err)
-	}
+	docs.File.Content = append(docs.File.Content, tableBytes.Bytes()...)
 
 	return nil
-}
-
-// header defines the table header for our documentation page.  This is ordered, so be
-// aware that changing the order will affect the display.
-func header() []string {
-	return []string{
-		HeaderEffect,
-		HeaderPermission,
-		HeaderResource,
-		HeaderReason,
-	}
 }

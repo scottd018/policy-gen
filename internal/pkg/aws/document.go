@@ -1,9 +1,8 @@
 package aws
 
 import (
+	"encoding/json"
 	"fmt"
-
-	"github.com/scottd018/go-utils/pkg/pointers"
 
 	"github.com/scottd018/policy-gen/internal/pkg/files"
 )
@@ -48,10 +47,8 @@ func (document *PolicyDocument) AddStatementFor(marker Marker) {
 		document.Statements = append(document.Statements, marker.ToStatement())
 
 		return
-	} else if !statement.HasEffect(*marker.Effect) {
-		// adjust the id if we have effects that are mismatched (e.g. Allow/Deny)
-		marker.Id = pointers.String(fmt.Sprintf("%s%s", *marker.Id, *marker.Effect))
-
+	} else if !statement.HasResource(*marker.Resource) || !statement.HasEffect(*marker.Effect) {
+		marker.AdjustID()
 		document.AddStatementFor(marker)
 	}
 
@@ -59,16 +56,23 @@ func (document *PolicyDocument) AddStatementFor(marker Marker) {
 	statement.AppendFor(marker)
 }
 
-// Write writes the policy document data to a file.
-func (document *PolicyDocument) Write(file *files.JSON, force bool) error {
-	var options []files.Option
-	if force {
-		options = []files.Option{files.WithOverwrite}
+// ToFile converts a policy document to a files.File object reference.
+func (document *PolicyDocument) ToFile(path string) (*files.File, error) {
+	// we do not need to pass the pre-existing directory option here because it
+	// was validated on input
+	file, err := files.NewFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("error converting document to file: [%s] - %w", path, err)
 	}
 
-	if err := file.Write(document, policyFilePermissions, options...); err != nil {
-		return fmt.Errorf("error writing file data - %w", err)
+	// convert object to json
+	data, err := json.MarshalIndent(document, "", "    ")
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal json for file: [%s] - %w", path, err)
 	}
 
-	return nil
+	// add content to the object
+	file.Content = data
+
+	return file, nil
 }

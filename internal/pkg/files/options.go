@@ -7,6 +7,7 @@ const (
 	WithOverwrite
 )
 
+// hasOption checks to see if an option exists in a set of given options.
 func hasOption(option Option, options ...Option) bool {
 	if len(options) == 0 {
 		return false
