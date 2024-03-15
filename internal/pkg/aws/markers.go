@@ -9,8 +9,7 @@ import (
 
 	"github.com/scottd018/go-utils/pkg/pointers"
 
-	"github.com/scottd018/policy-gen/internal/pkg/docs"
-	"github.com/scottd018/policy-gen/internal/pkg/policymarkers"
+	"github.com/scottd018/policy-gen/internal/pkg/policy"
 )
 
 var (
@@ -46,7 +45,7 @@ type Markers []Marker
 
 // MarkerDefinition returns the marker definition for an AWS IAM policy marker.
 func MarkerDefinition() string {
-	return fmt.Sprintf("+%s:%s", policymarkers.Prefix, awsMarkerDefinition)
+	return fmt.Sprintf("+%s:%s", policy.MarkerPrefix, awsMarkerDefinition)
 }
 
 // Definition returns the marker definition for an AWS IAM policy marker.  It is used
@@ -139,57 +138,6 @@ func (marker Marker) ToStatement() Statement {
 		SID:       *marker.Id,
 	}
 }
-
-// ToDocumentRows converts a Markers object to a set of document row interfaces.  This is needed
-// to display markers in documentation.
-func (m Markers) ToDocumentRows() []docs.Row {
-	markersSlice := make([]docs.Row, len(m))
-
-	for i := range m {
-		markersSlice[i] = &m[i]
-	}
-
-	return markersSlice
-}
-
-// // PolicyFiles processes a set of markers into their output policy files.
-// func (m Markers) PolicyFiles() PolicyFiles {
-// 	// markersByFile collects all of the markers that belong to a particular file.
-// 	markersByFile := map[string][]Marker{}
-
-// 	// collect all of the markers that belong to a particular file and then store
-// 	// them in the markersByFile map.
-// 	for _, marker := range m {
-// 		// ensure default values for the marker
-// 		marker.WithDefault()
-
-// 		// if the map is nil, add the marker to the array
-// 		if markersByFile[*marker.Name] == nil {
-// 			markersByFile[*marker.Name] = []Marker{marker}
-
-// 			continue
-// 		}
-
-// 		// if the array is flat, this marker as the first in the array
-// 		if len(markersByFile[*marker.Name]) == 0 {
-// 			markersByFile[*marker.Name] = []Marker{marker}
-
-// 			continue
-// 		}
-
-// 		// append the marker to the current list of markers
-// 		markersByFile[*marker.Name] = append(markersByFile[*marker.Name], marker)
-// 	}
-
-// 	// create a new policy file for each unique key in the markersByFile map
-// 	policyFiles := PolicyFiles{}
-
-// 	for filename, markers := range markersByFile {
-// 		policyFiles[filename] = NewPolicyDocument(markers...)
-// 	}
-
-// 	return policyFiles
-// }
 
 // EffectColumn returns the effect for the marker.  It is used to satisfy
 // the docs.Row interface.

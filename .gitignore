@@ -5,8 +5,7 @@ bin/
 .vscode
 
 # ignore test output
-internal/pkg/aws/testoutput
-internal/pkg/files/testoutput
+**/*/output/
 
 # ignore completion scripts
 completions/**/*

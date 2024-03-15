@@ -12,7 +12,7 @@ import (
 
 	"github.com/scottd018/policy-gen/internal/pkg/docs"
 	"github.com/scottd018/policy-gen/internal/pkg/files"
-	"github.com/scottd018/policy-gen/internal/pkg/policymarkers"
+	"github.com/scottd018/policy-gen/internal/pkg/policy"
 	"github.com/scottd018/policy-gen/internal/pkg/utils"
 )
 
@@ -23,13 +23,13 @@ type Processor struct {
 	Log                 zerolog.Logger
 	Definition          *marker.Definition
 	Registry            *marker.Registry
-	PolicyFileGenerator policymarkers.FileGenerator
+	PolicyFileGenerator policy.FileGenerator
 }
 
 // NewProcessor instantiates a new instance of a Processor object.  A processor
 // is used to process a given set of markers from a given set of inputs, mainly
 // the input path to parse.
-func NewProcessor(config *Config, marker string, object interface{}, generator policymarkers.FileGenerator) (*Processor, error) {
+func NewProcessor(config *Config, marker string, object interface{}, generator policy.FileGenerator) (*Processor, error) {
 	// configure logging
 	level := zerolog.InfoLevel
 	if config.Debug {
@@ -76,14 +76,14 @@ func (processor *Processor) Process() error {
 		)
 	}
 
-	// convert our file markers into a set of policy markers
+	// convert our file markers into a set of policyMarkers markers
 	policyMarkers, err := processor.FindMarkers(results)
 	if err != nil {
 		return fmt.Errorf("error converting results to markers - %w", err)
 	}
 
 	// retrieve our policy files from our markers
-	policyFiles, err := policymarkers.ToPolicyFiles(policyMarkers, processor.PolicyFileGenerator)
+	policyFiles, err := policy.ToPolicyFiles(policyMarkers, processor.PolicyFileGenerator)
 	if err != nil {
 		return fmt.Errorf("error retrieving files from markers - %w", err)
 	}
@@ -105,12 +105,11 @@ func (processor *Processor) Process() error {
 	if processor.Config.DocumentationFile != nil && processor.Config.DocumentationFile.File != "" {
 		processor.Log.Info().Msgf("writing documentation file: [%s]", processor.Config.DocumentationFile.Path())
 
-		// create the document
+		// create the document and generate the content
 		documentationFile := docs.NewDocumentation(processor.Config.DocumentationFile)
-		if err := documentationFile.Generate(policymarkers.ToDocumentRows(policyMarkers)...); err != nil {
-			return fmt.Errorf("error writing documentation file: [%s] - %w", processor.Config.DocumentationFile.Path(), err)
-		}
+		documentationFile.Generate(ToDocumentRows(policyMarkers)...)
 
+		// write the documentation to the specified path
 		if err := documentationFile.File.Write(files.ModePolicyFile, options...); err != nil {
 			return fmt.Errorf("error writing documentation file: [%s] - %w", documentationFile.File.Path(), err)
 		}
@@ -168,8 +167,8 @@ func (processor *Processor) Parse() ([]*parser.Result, error) {
 }
 
 // FindMarkers finds all the markers in a given set of parsed results.
-func (processor *Processor) FindMarkers(results []*parser.Result) ([]policymarkers.Marker, error) {
-	foundMarkers := make([]policymarkers.Marker, len(results))
+func (processor *Processor) FindMarkers(results []*parser.Result) ([]policy.Marker, error) {
+	foundMarkers := make([]policy.Marker, len(results))
 
 	for i := range results {
 		// convert the marker to its underlying type
@@ -200,4 +199,16 @@ func (processor *Processor) FindMarkers(results []*parser.Result) ([]policymarke
 	}
 
 	return foundMarkers, nil
+}
+
+// ToDocumentRows converts a Markers object to a set of document row interfaces.  This is needed
+// to display markers in documentation.
+func ToDocumentRows(m []policy.Marker) []docs.Row {
+	markersSlice := make([]docs.Row, len(m))
+
+	for i := range m {
+		markersSlice[i] = m[i]
+	}
+
+	return markersSlice
 }

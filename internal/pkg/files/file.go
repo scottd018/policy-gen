@@ -54,21 +54,6 @@ func NewFile(path string, options ...Option) (*File, error) {
 	return file, nil
 }
 
-// PolicyFilePath returns the full path for a policy file given a directory and file key name.
-func PolicyFilePath(directory *Directory, key string) string {
-	return fmt.Sprintf("%s/%s.%s", directory.Path, key, ExtensionJSON)
-}
-
-// DocumentationFilePath returns the full path for a documentation file given a directory and file key name.
-func DocumentationFilePath(directory *Directory, key string) string {
-	return fmt.Sprintf("%s/%s.%s", directory.Path, key, ExtensionMarkdown)
-}
-
-// Path returns the full path value for a file.
-func (file *File) Path() string {
-	return fmt.Sprintf("%s/%s", file.Directory.Path, file.File)
-}
-
 // Write writes data to a file.
 func (file *File) Write(permissions fs.FileMode, options ...Option) error {
 	// return an error if we have no content to write
@@ -97,4 +82,14 @@ func (file *File) Write(permissions fs.FileMode, options ...Option) error {
 	}
 
 	return fmt.Errorf("cannot write file [%s] - file already exists and force not requested", file.File)
+}
+
+// PolicyFilePath returns the full path for a policy file given a directory and file key name.
+func PolicyFilePath(directory *Directory, key string) string {
+	return fmt.Sprintf("%s/%s.%s", directory.Path, key, ExtensionJSON)
+}
+
+// Path returns the full path value for a file.
+func (file *File) Path() string {
+	return fmt.Sprintf("%s/%s", file.Directory.Path, file.File)
 }

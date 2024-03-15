@@ -9,10 +9,12 @@ import (
 	"github.com/scottd018/go-utils/pkg/directory"
 )
 
+// Directory is an object that represents a directory that contains policy file input or output.
 type Directory struct {
 	Path string
 }
 
+// NewDirectory creates a new instance of a directory object.
 func NewDirectory(path string, options ...Option) (*Directory, error) {
 	// trim the trailing / if we have one
 	directoryPath := path
@@ -34,9 +36,7 @@ func NewDirectory(path string, options ...Option) (*Directory, error) {
 		}
 	}
 
-	return &Directory{
-		Path: directoryPath,
-	}, nil
+	return &Directory{Path: directoryPath}, nil
 }
 
 // ListFilePaths lists file paths within a directory.
@@ -76,7 +76,7 @@ func (dir *Directory) ListFilePaths(recursive bool) ([]string, error) {
 
 	for path := range files {
 		if files[path].Type().IsRegular() {
-			paths = append(paths, files[path].Name())
+			paths = append(paths, fmt.Sprintf("%s/%s", dir.Path, files[path].Name()))
 		}
 	}
 

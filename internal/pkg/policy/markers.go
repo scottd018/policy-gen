@@ -1,22 +1,14 @@
-package policymarkers
+package policy
 
 import (
 	"fmt"
 
-	"github.com/scottd018/policy-gen/internal/pkg/docs"
 	"github.com/scottd018/policy-gen/internal/pkg/files"
 )
 
 const (
-	Prefix = "policy-gen"
+	MarkerPrefix = "policy-gen"
 )
-
-// FileGenerator is a generic interface which represents an object that generates
-// files from a set of policy markers.
-type FileGenerator interface {
-	GenerateFile(string, []Marker) (*files.File, error)
-	GetDirectory() *files.Directory
-}
 
 // Marker is a generic interface which represents a marker within a file.
 type Marker interface {
@@ -32,6 +24,10 @@ type Marker interface {
 	ReasonColumn() string
 	ResourceColumn() string
 }
+
+// MarkerMap is a map of a string to a set of markers.  In this case the string represents
+// a file name where the markers will be used to generate content in a file.
+type MarkerMap map[string][]Marker
 
 // ToPolicyFiles generates a set of files mapped to their content based on a given
 // set of input markers.
@@ -79,16 +75,4 @@ func ToPolicyFiles(markers []Marker, generator FileGenerator) ([]*files.File, er
 	}
 
 	return policyFiles, nil
-}
-
-// ToDocumentRows converts a Markers object to a set of document row interfaces.  This is needed
-// to display markers in documentation.
-func ToDocumentRows(m []Marker) []docs.Row {
-	markersSlice := make([]docs.Row, len(m))
-
-	for i := range m {
-		markersSlice[i] = m[i]
-	}
-
-	return markersSlice
 }

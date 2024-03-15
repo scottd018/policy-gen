@@ -13,7 +13,8 @@ test-commit:
 
 test-unit:
 	mkdir -p bin/ internal/pkg/aws/testoutput internal/pkg/files/testoutput ;\
-		go test -cover -coverprofile=./bin/coverage.out ./...
+		go test -cover -coverprofile=./bin/coverage.out ./...; \
+		rm -rf internal/pkg/files/test/output/*
 
 test-functional-aws:
 	mkdir -p bin/ internal/pkg/aws/testoutput internal/pkg/files/testoutput ;\

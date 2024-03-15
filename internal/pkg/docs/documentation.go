@@ -29,12 +29,7 @@ func NewDocumentation(file *files.File) *Documentation {
 }
 
 // Generate generates a document from a set of rows.
-func (docs *Documentation) Generate(rows ...Row) error {
-	// ensure our documentation has a file name set
-	if docs.File.Path() == "" {
-		return ErrMissingFilename
-	}
-
+func (docs *Documentation) Generate(rows ...Row) {
 	// create the table
 	tableBytes := &bytes.Buffer{}
 
@@ -60,6 +55,4 @@ func (docs *Documentation) Generate(rows ...Row) error {
 
 	// append the rendered data to the existing data
 	docs.File.Content = append(docs.File.Content, tableBytes.Bytes()...)
-
-	return nil
 }
