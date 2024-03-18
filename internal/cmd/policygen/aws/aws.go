@@ -34,7 +34,7 @@ func NewCommand() *cobra.Command {
 		Use:     "aws",
 		Short:   "Generate AWS IAM policies",
 		Long:    `Generate AWS IAM policies`,
-		RunE:    func(cmd *cobra.Command, args []string) error { return run(flags) },
+		RunE:    func(_ *cobra.Command, _ []string) error { return run(flags) },
 		Example: awsPolicyGenExample,
 	}
 
@@ -52,18 +52,18 @@ func run(flags input.Flags) error {
 	}
 
 	// create the processor
-	processor, err := processor.NewProcessor(
+	markerProcessor, err := processor.NewProcessor(
 		config,
 		aws.MarkerDefinition(),
 		aws.Marker{},
 		&aws.PolicyDocumentGenerator{Directory: config.OutputDirectory},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to create marker processor - %w", err)
 	}
 
 	// execute
-	if err := processor.Process(); err != nil {
+	if err := markerProcessor.Process(); err != nil {
 		return fmt.Errorf("unable to process markers - %w", err)
 	}
 

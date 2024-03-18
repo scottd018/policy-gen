@@ -51,11 +51,15 @@ func TestConvertToMarker(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			got, err := ConvertToMarker(tt.args.marker)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ConvertToMarker() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ConvertToMarker() = %v, want %v", got, tt.want)
 			}

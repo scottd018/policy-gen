@@ -24,6 +24,7 @@ func TestMarker_Definition(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			marker := &Marker{}
 			if got := marker.Definition(); got != tt.want {
 				t.Errorf("Marker.Definition() = %v, want %v", got, tt.want)
@@ -53,8 +54,10 @@ func TestMarker_WithDefault(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			marker := &Marker{}
 			marker.WithDefault()
+
 			if !reflect.DeepEqual(marker, tt.want) {
 				t.Errorf("WithDefault() = %v, want %v", marker, tt.want)
 			}
@@ -94,9 +97,8 @@ func TestMarker_GetName(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			marker := &Marker{
-				Name: tt.fields.Name,
-			}
+
+			marker := &Marker{Name: tt.fields.Name}
 			if got := marker.GetName(); got != tt.want {
 				t.Errorf("Marker.GetName() = %v, want %v", got, tt.want)
 			}
@@ -136,9 +138,8 @@ func TestMarker_EffectColumn(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			marker := &Marker{
-				Effect: tt.fields.Effect,
-			}
+
+			marker := &Marker{Effect: tt.fields.Effect}
 			if got := marker.EffectColumn(); got != tt.want {
 				t.Errorf("Marker.EffectColumn() = %v, want %v", got, tt.want)
 			}
@@ -178,9 +179,8 @@ func TestMarker_PermissionColumn(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			marker := &Marker{
-				Action: tt.fields.Action,
-			}
+
+			marker := &Marker{Action: tt.fields.Action}
 			if got := marker.PermissionColumn(); got != tt.want {
 				t.Errorf("Marker.PermissionColumn() = %v, want %v", got, tt.want)
 			}
@@ -220,9 +220,8 @@ func TestMarker_ResourceColumn(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			marker := &Marker{
-				Resource: tt.fields.Resource,
-			}
+
+			marker := &Marker{Resource: tt.fields.Resource}
 			if got := marker.ResourceColumn(); got != tt.want {
 				t.Errorf("Marker.ResourceColumn() = %v, want %v", got, tt.want)
 			}
@@ -262,9 +261,8 @@ func TestMarker_ReasonColumn(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			marker := &Marker{
-				Reason: tt.fields.Reason,
-			}
+
+			marker := &Marker{Reason: tt.fields.Reason}
 			if got := marker.ReasonColumn(); got != tt.want {
 				t.Errorf("Marker.ReasonColumn() = %v, want %v", got, tt.want)
 			}
@@ -275,6 +273,7 @@ func TestMarker_ReasonColumn(t *testing.T) {
 func TestMarker_AdjustID(t *testing.T) {
 	t.Parallel()
 
+	//nolint:revive,stylecheck
 	type fields struct {
 		Id *string
 	}
@@ -317,9 +316,8 @@ func TestMarker_AdjustID(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			marker := &Marker{
-				Id: tt.fields.Id,
-			}
+
+			marker := &Marker{Id: tt.fields.Id}
 			marker.AdjustID()
 		})
 	}
@@ -328,6 +326,7 @@ func TestMarker_AdjustID(t *testing.T) {
 func TestMarker_Validate(t *testing.T) {
 	t.Parallel()
 
+	//nolint:revive,stylecheck
 	type fields struct {
 		Name     *string
 		Id       *string
@@ -468,6 +467,7 @@ func TestMarker_Validate(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			marker := &Marker{
 				Name:     tt.fields.Name,
 				Id:       tt.fields.Id,
@@ -478,22 +478,6 @@ func TestMarker_Validate(t *testing.T) {
 			}
 			if err := marker.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Marker.Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestMarkerDefinition(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := MarkerDefinition(); got != tt.want {
-				t.Errorf("MarkerDefinition() = %v, want %v", got, tt.want)
 			}
 		})
 	}

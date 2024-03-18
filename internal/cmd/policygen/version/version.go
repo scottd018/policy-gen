@@ -18,7 +18,7 @@ func NewCommand() *cobra.Command {
 		Use:     "version",
 		Short:   "Print version",
 		Long:    `Print version`,
-		Run:     func(cmd *cobra.Command, args []string) { run() },
+		Run:     func(_ *cobra.Command, _ []string) { run() },
 		Example: versionExample,
 	}
 

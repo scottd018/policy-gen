@@ -158,6 +158,7 @@ func TestDirectory_ListFilePaths(t *testing.T) {
 			got, err := dir.ListFilePaths(tt.args.recursive)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Directory.ListFilePaths() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 

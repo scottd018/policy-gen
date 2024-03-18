@@ -1,9 +1,12 @@
 package policy
 
 const (
+	FakeString           = "fake"
+	FakeDefinition       = FakeString
+	FakeName             = FakeString
 	FakeEffectColumn     = "Allow"
 	FakePermissionColumn = "*"
-	FakeReasonColumn     = "fake"
+	FakeReasonColumn     = FakeString
 	FakeResourceColumn   = "*"
 )
 
@@ -12,17 +15,19 @@ const (
 type fake struct{}
 
 // NewFakeMarker generates a new instances of a fake marker.
+//
+//nolint:revive
 func NewFakeMarker() *fake {
 	return &fake{}
 }
 
-// fake methods for policies
-func (f *fake) Definition() string { return "fake" }
+// fake methods for policies.
+func (f *fake) Definition() string { return FakeDefinition }
 func (f *fake) Validate() error    { return nil }
-func (f *fake) GetName() string    { return "fake" }
+func (f *fake) GetName() string    { return FakeName }
 func (f *fake) WithDefault()       {}
 
-// fake methods for documentation
+// fake methods for documentation.
 func (f *fake) EffectColumn() string     { return FakeEffectColumn }
 func (f *fake) PermissionColumn() string { return FakePermissionColumn }
 func (f *fake) ReasonColumn() string     { return FakeReasonColumn }

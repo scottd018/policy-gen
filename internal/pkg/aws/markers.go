@@ -204,7 +204,7 @@ func (marker *Marker) AdjustID() {
 
 	// add to the collected value
 	value, _ := strconv.Atoi(suffix)
-	value += 1
+	value++
 
 	// set the id
 	marker.Id = pointers.String(fmt.Sprintf("%s%d", prefix, value))

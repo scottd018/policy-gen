@@ -4,9 +4,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/spf13/cobra"
+
 	"github.com/scottd018/policy-gen/internal/pkg/files"
 	"github.com/scottd018/policy-gen/internal/pkg/processor"
-	"github.com/spf13/cobra"
 )
 
 func TestFlags_ToProcessorConfig(t *testing.T) {
@@ -46,7 +47,7 @@ func TestFlags_ToProcessorConfig(t *testing.T) {
 			wantErr: true,
 			overrideFunc: func(flags *Flags) {
 				f := *flags
-				f[FlagInputPath].StringValue = "this/path/is/fake"
+				f[FlagInputPath].StringValue = "this/path/is/fake/input"
 			},
 		},
 		{
@@ -56,7 +57,7 @@ func TestFlags_ToProcessorConfig(t *testing.T) {
 			wantErr: true,
 			overrideFunc: func(flags *Flags) {
 				f := *flags
-				f[FlagOutputPath].StringValue = "this/path/is/fake"
+				f[FlagOutputPath].StringValue = "this/path/is/fake/output"
 			},
 		},
 		{
@@ -103,6 +104,7 @@ func TestFlags_ToProcessorConfig(t *testing.T) {
 			got, err := tt.flags.ToProcessorConfig()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Flags.ToProcessorConfig() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 

@@ -1,6 +1,7 @@
 package files
 
 import (
+	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
@@ -97,9 +98,11 @@ func TestNewFile(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			got, err := NewFile(tt.args.path, tt.args.options...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewFile() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 
@@ -229,12 +232,13 @@ func TestFile_Write(t *testing.T) {
 
 			if err := file.Write(tt.args.permissions, tt.args.options...); (err != nil) != tt.wantErr {
 				t.Errorf("File.Write() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 
 			if !tt.wantErr {
 				content, _ := os.ReadFile(file.File)
-				if string(content) != string(tt.fields.Content) {
+				if !bytes.Equal(content, tt.fields.Content) {
 					t.Errorf("File.Write() content = %s, wantContent %s", content, tt.fields.Content)
 				}
 			}

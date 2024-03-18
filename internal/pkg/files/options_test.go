@@ -45,6 +45,7 @@ func Test_hasOption(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := hasOption(tt.args.option, tt.args.options...); got != tt.want {
 				t.Errorf("hasOption() = %v, want %v", got, tt.want)
 			}

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/scottd018/go-utils/pkg/pointers"
+
 	"github.com/scottd018/policy-gen/internal/pkg/files"
 	"github.com/scottd018/policy-gen/internal/pkg/policy"
 )
@@ -191,14 +192,18 @@ func TestPolicyDocumentGenerator_ToPolicyMarkerMap(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			generator := &PolicyDocumentGenerator{
 				Directory: tt.fields.Directory,
 			}
+
 			got, err := generator.ToPolicyMarkerMap(tt.args.markers)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PolicyDocumentGenerator.ToPolicyMarkerMap() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PolicyDocumentGenerator.ToPolicyMarkerMap() = %v, want %v", got, tt.want)
 			}
@@ -369,14 +374,18 @@ func TestPolicyDocumentGenerator_ToDocument(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			generator := &PolicyDocumentGenerator{
 				Directory: tt.fields.Directory,
 			}
+
 			got, err := generator.ToDocument(tt.args.markers)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PolicyDocumentGenerator.ToDocument() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PolicyDocumentGenerator.ToDocument() = %v, want %v", got, tt.want)
 			}

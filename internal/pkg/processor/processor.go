@@ -29,7 +29,7 @@ type Processor struct {
 // NewProcessor instantiates a new instance of a Processor object.  A processor
 // is used to process a given set of markers from a given set of inputs, mainly
 // the input path to parse.
-func NewProcessor(config *Config, marker string, object interface{}, generator policy.DocumentGenerator) (*Processor, error) {
+func NewProcessor(config *Config, policyMarker string, object interface{}, generator policy.DocumentGenerator) (*Processor, error) {
 	// configure logging
 	level := zerolog.InfoLevel
 	if config.Debug {
@@ -47,9 +47,9 @@ func NewProcessor(config *Config, marker string, object interface{}, generator p
 	registry := markers.NewRegistry()
 
 	// define our marker
-	definition, err := markers.Define(marker, object)
+	definition, err := markers.Define(policyMarker, object)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create policy definition for marker [%s] - %w", marker, err)
+		return nil, fmt.Errorf("unable to create policy definition for marker [%s] - %w", policyMarker, err)
 	}
 
 	// add the marker to the registry
@@ -96,6 +96,7 @@ func (processor *Processor) Process() error {
 
 	for _, policyFile := range policyFiles {
 		processor.Log.Info().Msgf("writing policy file: [%s]", policyFile.Path())
+
 		if err := policyFile.Write(files.ModePolicyFile, options...); err != nil {
 			return fmt.Errorf("error writing policy file: [%s] - %w", policyFile.Path(), err)
 		}
@@ -124,7 +125,7 @@ func (processor *Processor) Parse() ([]*parser.Result, error) {
 	processor.Log.Info().Msgf("collecting input for path: [%s]", processor.Config.InputDirectory.Path)
 
 	// collect the file paths from the given input directory path
-	files, err := processor.Config.InputDirectory.ListFilePaths(processor.Config.Recursive)
+	inputFiles, err := processor.Config.InputDirectory.ListFilePaths(processor.Config.Recursive)
 	if err != nil {
 		return nil, fmt.Errorf("error collecting file paths for marker: [%s] - %w", processor.Definition.Name, err)
 	}
@@ -132,13 +133,13 @@ func (processor *Processor) Parse() ([]*parser.Result, error) {
 	// parse the content of each file and collect the results
 	results := []*parser.Result{}
 
-	for path := range files {
-		processor.Log.Debug().Msgf("collecting marker results for file: [%s]", files[path])
+	for path := range inputFiles {
+		processor.Log.Debug().Msgf("collecting marker results for file: [%s]", inputFiles[path])
 
 		// read in the file content
-		content, err := os.ReadFile(files[path])
+		content, err := os.ReadFile(inputFiles[path])
 		if err != nil {
-			return nil, fmt.Errorf("unable to read file: [%s] - %w", files[path], err)
+			return nil, fmt.Errorf("unable to read file: [%s] - %w", inputFiles[path], err)
 		}
 
 		// only append text file content
@@ -170,7 +171,7 @@ func (processor *Processor) FindMarkers(results []*parser.Result) ([]policy.Mark
 
 	for i := range results {
 		// convert the marker to its underlying type
-		marker, err := utils.ConvertToMarker(results[i].Object)
+		markerResult, err := utils.ConvertToMarker(results[i].Object)
 		if err != nil {
 			return nil, fmt.Errorf(
 				"found invalid marker with text [%s] at position [%d] - %w",
@@ -181,7 +182,7 @@ func (processor *Processor) FindMarkers(results []*parser.Result) ([]policy.Mark
 		}
 
 		// ensure the marker we found is valid
-		if err := marker.Validate(); err != nil {
+		if err := markerResult.Validate(); err != nil {
 			return nil, fmt.Errorf(
 				"found invalid marker with text [%s] at position [%d] - %w",
 				results[i].MarkerText,
@@ -193,7 +194,7 @@ func (processor *Processor) FindMarkers(results []*parser.Result) ([]policy.Mark
 		processor.Log.Debug().Msgf("found marker: [%s]", results[i].MarkerText)
 
 		// add the markers to the slice
-		foundMarkers[i] = marker
+		foundMarkers[i] = markerResult
 	}
 
 	return foundMarkers, nil

@@ -1,7 +1,7 @@
 package input
 
 const (
-	// input flags
+	// input flags.
 	FlagInputPath     = "input-path"
 	FlagOutputPath    = "output-path"
 	FlagDocumentation = "documentation"
@@ -9,14 +9,14 @@ const (
 	FlagForce         = "force"
 	FlagDebug         = "debug"
 
-	// input flag short values
+	// input flag short values.
 	FlagInputPathShort     = "i"
 	FlagOutputPathShort    = "o"
 	FlagDocumentationShort = "d"
 	FlagRecursiveShort     = "r"
 	FlagForceShort         = "f"
 
-	// input flag default values
+	// input flag default values.
 	FlagInputPathDefault     = "./"
 	FlagOutputPathDefault    = "./"
 	FlagDocumentationDefault = ""
@@ -24,7 +24,7 @@ const (
 	FlagForceDefault         = false
 	FlagDebugDefault         = false
 
-	// input flag descriptions
+	// input flag descriptions.
 	FlagInputPathDescription     = "Input path to recursively begin parsing markers"
 	FlagOutputPathDescription    = "Output path to output generated policies"
 	FlagDocumentationDescription = "Documentation file to write"
