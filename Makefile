@@ -12,16 +12,16 @@ test-commit:
 	scripts/commit-check-latest.sh
 
 test-unit:
-	mkdir -p bin/ internal/pkg/aws/testoutput internal/pkg/files/testoutput ;\
+	mkdir -p bin/ internal/pkg/aws/test/output internal/pkg/files/test/output ;\
 		go test -cover -coverprofile=./bin/coverage.out ./...; \
 		rm -rf internal/pkg/files/test/output/*
 
 test-functional-aws:
-	mkdir -p bin/ internal/pkg/aws/testoutput internal/pkg/files/testoutput ;\
+	mkdir -p bin/ internal/pkg/aws/test/output internal/pkg/files/test/output ;\
 		bin/policy-gen aws \
-			--input-path=internal/pkg/aws/testinput \
-			--output-path=internal/pkg/aws/testoutput \
-			--documentation=internal/pkg/aws/testoutput/README.md \
+			--input-path=internal/pkg/aws/test/input \
+			--output-path=internal/pkg/aws/test/output \
+			--documentation=internal/pkg/aws/test/output/README.md \
 			--force \
 			--debug
 
@@ -35,7 +35,7 @@ test-e2e-start-aws:
 test-e2e-aws:
 	aws iam create-policy \
 		--policy-name test \
-		--policy-document file://internal/pkg/aws/testoutput/test.json \
+		--policy-document file://internal/pkg/aws/test/output/test.json \
 		--description "this is a test aws policy"
 
 test-coverage-view: test-unit

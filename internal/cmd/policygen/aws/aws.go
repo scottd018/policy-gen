@@ -56,7 +56,7 @@ func run(flags input.Flags) error {
 		config,
 		aws.MarkerDefinition(),
 		aws.Marker{},
-		&aws.PolicyFileGenerator{Directory: config.OutputDirectory},
+		&aws.PolicyDocumentGenerator{Directory: config.OutputDirectory},
 	)
 	if err != nil {
 		return err

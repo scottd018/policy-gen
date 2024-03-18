@@ -7,6 +7,31 @@ import (
 	"github.com/scottd018/go-utils/pkg/pointers"
 )
 
+func TestMarker_Definition(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			name: "ensure marker returns appropriately",
+			want: "+policy-gen:aws:iam:policy",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			marker := &Marker{}
+			if got := marker.Definition(); got != tt.want {
+				t.Errorf("Marker.Definition() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestMarker_WithDefault(t *testing.T) {
 	t.Parallel()
 
@@ -37,261 +62,47 @@ func TestMarker_WithDefault(t *testing.T) {
 	}
 }
 
-// func TestMarkers_PolicyFiles(t *testing.T) {
-// 	t.Parallel()
+func TestMarker_GetName(t *testing.T) {
+	t.Parallel()
 
-// 	tests := []struct {
-// 		name    string
-// 		markers Markers
-// 		want    PolicyFiles
-// 	}{
-// 		{
-// 			name: "ensure markers without defaulted fields set return appropriately",
-// 			markers: Markers{
-// 				{
-// 					Name:   pointers.String("test"),
-// 					Action: pointers.String("ec2:DescribeVpcs"),
-// 				},
-// 			},
-// 			want: PolicyFiles{
-// 				"test": &PolicyDocument{
-// 					Version: defaultVersion,
-// 					Statements: []Statement{
-// 						{
-// 							SID:       defaultStatementID,
-// 							Effect:    defaultStatementEffect,
-// 							Resources: []string{defaultStatementResource},
-// 							Action:    []string{"ec2:DescribeVpcs"},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		{
-// 			name: "ensure markers with defaulted fields set return appropriately",
-// 			markers: Markers{
-// 				{
-// 					Name:     pointers.String("test"),
-// 					Action:   pointers.String("ec2:DescribeVpcs"),
-// 					Effect:   pointers.String("Allow"),
-// 					Resource: pointers.String("thisisfake"),
-// 					Id:       pointers.String("test"),
-// 				},
-// 			},
-// 			want: PolicyFiles{
-// 				"test": &PolicyDocument{
-// 					Version: defaultVersion,
-// 					Statements: []Statement{
-// 						{
-// 							SID:       "test",
-// 							Effect:    ValidEffectAllow,
-// 							Resources: []string{"thisisfake"},
-// 							Action:    []string{"ec2:DescribeVpcs"},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		{
-// 			name: "ensure multiple markers in the same file with same id return appropriately",
-// 			markers: Markers{
-// 				{
-// 					Name:   pointers.String("test"),
-// 					Action: pointers.String("ec2:DescribeVpcs"),
-// 					Id:     pointers.String("test"),
-// 				},
-// 				{
-// 					Name:   pointers.String("test"),
-// 					Action: pointers.String("iam:DescribePolicy"),
-// 					Id:     pointers.String("test"),
-// 				},
-// 			},
-// 			want: PolicyFiles{
-// 				"test": &PolicyDocument{
-// 					Version: defaultVersion,
-// 					Statements: []Statement{
-// 						{
-// 							SID:       "test",
-// 							Effect:    ValidEffectAllow,
-// 							Resources: []string{defaultStatementResource},
-// 							Action: []string{
-// 								"ec2:DescribeVpcs",
-// 								"iam:DescribePolicy",
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		{
-// 			name: "ensure multiple markers in different files with same id return appropriately",
-// 			markers: Markers{
-// 				{
-// 					Name:   pointers.String("test1"),
-// 					Action: pointers.String("ec2:DescribeVpcs"),
-// 					Id:     pointers.String("test"),
-// 				},
-// 				{
-// 					Name:   pointers.String("test2"),
-// 					Action: pointers.String("iam:DescribePolicy"),
-// 					Id:     pointers.String("test"),
-// 				},
-// 			},
-// 			want: PolicyFiles{
-// 				"test1": &PolicyDocument{
-// 					Version: defaultVersion,
-// 					Statements: []Statement{
-// 						{
-// 							SID:       "test",
-// 							Effect:    ValidEffectAllow,
-// 							Resources: []string{defaultStatementResource},
-// 							Action: []string{
-// 								"ec2:DescribeVpcs",
-// 							},
-// 						},
-// 					},
-// 				},
-// 				"test2": &PolicyDocument{
-// 					Version: defaultVersion,
-// 					Statements: []Statement{
-// 						{
-// 							SID:       "test",
-// 							Effect:    ValidEffectAllow,
-// 							Resources: []string{defaultStatementResource},
-// 							Action: []string{
-// 								"iam:DescribePolicy",
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		{
-// 			name: "ensure multiple markers in different files with multiple different ids return appropriately",
-// 			markers: Markers{
-// 				{
-// 					Name:   pointers.String("test1"),
-// 					Action: pointers.String("ec2:DescribeVpcs"),
-// 					Id:     pointers.String("test"),
-// 				},
-// 				{
-// 					Name:   pointers.String("test1"),
-// 					Action: pointers.String("ec2:Describe*"),
-// 					Id:     pointers.String("test"),
-// 				},
-// 				{
-// 					Name:   pointers.String("test1"),
-// 					Action: pointers.String("iam:*"),
-// 				},
-// 				{
-// 					Name:   pointers.String("test1"),
-// 					Action: pointers.String("route53:*"),
-// 				},
-// 				{
-// 					Name:   pointers.String("test2"),
-// 					Action: pointers.String("ec2:*"),
-// 					Id:     pointers.String("test"),
-// 				},
-// 				{
-// 					Name:   pointers.String("test2"),
-// 					Action: pointers.String("s3:*"),
-// 					Id:     pointers.String("test"),
-// 				},
-// 				{
-// 					Name:   pointers.String("test2"),
-// 					Action: pointers.String("sts:*"),
-// 				},
-// 				{
-// 					Name:     pointers.String("test2"),
-// 					Action:   pointers.String("rds:*"),
-// 					Resource: pointers.String("thisisfake"),
-// 				},
-// 				{
-// 					Name:     pointers.String("test2"),
-// 					Action:   pointers.String("rds:*"),
-// 					Resource: pointers.String("thisisfake2"),
-// 				},
-// 				{
-// 					Name:     pointers.String("test2"),
-// 					Action:   pointers.String("elasticache:*"),
-// 					Resource: pointers.String("thisisfake2"),
-// 					Effect:   pointers.String(ValidEffectDeny),
-// 				},
-// 			},
-// 			want: PolicyFiles{
-// 				"test1": &PolicyDocument{
-// 					Version: defaultVersion,
-// 					Statements: []Statement{
-// 						{
-// 							SID:       "test",
-// 							Effect:    ValidEffectAllow,
-// 							Resources: []string{defaultStatementResource},
-// 							Action: []string{
-// 								"ec2:DescribeVpcs",
-// 								"ec2:Describe*",
-// 							},
-// 						},
-// 						{
-// 							SID:       defaultStatementID,
-// 							Effect:    ValidEffectAllow,
-// 							Resources: []string{defaultStatementResource},
-// 							Action: []string{
-// 								"iam:*",
-// 								"route53:*",
-// 							},
-// 						},
-// 					},
-// 				},
-// 				"test2": &PolicyDocument{
-// 					Version: defaultVersion,
-// 					Statements: []Statement{
-// 						{
-// 							SID:       "test",
-// 							Effect:    ValidEffectAllow,
-// 							Resources: []string{defaultStatementResource},
-// 							Action: []string{
-// 								"ec2:*",
-// 								"s3:*",
-// 							},
-// 						},
-// 						{
-// 							SID:    defaultStatementID,
-// 							Effect: ValidEffectAllow,
-// 							Resources: []string{
-// 								"thisisfake",
-// 								"thisisfake2",
-// 							},
-// 							Action: []string{
-// 								"sts:*",
-// 								"rds:*",
-// 							},
-// 						},
-// 						{
-// 							SID:    fmt.Sprintf("%s%s", defaultStatementID, ValidEffectDeny),
-// 							Effect: ValidEffectDeny,
-// 							Resources: []string{
-// 								"thisisfake2",
-// 							},
-// 							Action: []string{
-// 								"elasticache:*",
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 	}
+	type fields struct {
+		Name *string
+	}
 
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			t.Parallel()
-// 			if got := tt.markers.PolicyFiles(); !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("Markers.PolicyFiles() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "ensure marker with nil name returns appropriately",
+			fields: fields{
+				Name: nil,
+			},
+			want: "",
+		},
+		{
+			name: "ensure marker with non-nil name returns appropriately",
+			fields: fields{
+				Name: pointers.String("test"),
+			},
+			want: "test",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			marker := &Marker{
+				Name: tt.fields.Name,
+			}
+			if got := marker.GetName(); got != tt.want {
+				t.Errorf("Marker.GetName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 func TestMarker_EffectColumn(t *testing.T) {
 	t.Parallel()
@@ -510,6 +321,180 @@ func TestMarker_AdjustID(t *testing.T) {
 				Id: tt.fields.Id,
 			}
 			marker.AdjustID()
+		})
+	}
+}
+
+func TestMarker_Validate(t *testing.T) {
+	t.Parallel()
+
+	type fields struct {
+		Name     *string
+		Id       *string
+		Action   *string
+		Effect   *string
+		Resource *string
+		Reason   *string
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "ensure marker with nil name returns an error",
+			fields: fields{
+				Name:     nil,
+				Id:       pointers.String(defaultStatementID),
+				Action:   pointers.String("ec2:DescribeVpcs"),
+				Effect:   pointers.String(ValidEffectAllow),
+				Resource: pointers.String(defaultStatementResource),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure marker with empty name returns an error",
+			fields: fields{
+				Name:     pointers.String(""),
+				Id:       pointers.String(defaultStatementID),
+				Action:   pointers.String("ec2:DescribeVpcs"),
+				Effect:   pointers.String(ValidEffectAllow),
+				Resource: pointers.String(defaultStatementResource),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure marker with nil action returns an error",
+			fields: fields{
+				Name:     pointers.String("test"),
+				Id:       pointers.String(defaultStatementID),
+				Action:   nil,
+				Effect:   pointers.String(ValidEffectAllow),
+				Resource: pointers.String(defaultStatementResource),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure marker with empty action returns an error",
+			fields: fields{
+				Name:     pointers.String("test"),
+				Id:       pointers.String(defaultStatementID),
+				Action:   pointers.String(""),
+				Effect:   pointers.String(ValidEffectAllow),
+				Resource: pointers.String(defaultStatementResource),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure name with invalid characters returns an error",
+			fields: fields{
+				Name:     pointers.String("test-name"),
+				Id:       pointers.String(defaultStatementID),
+				Action:   pointers.String("ec2:DescribeVpcs"),
+				Effect:   pointers.String(ValidEffectAllow),
+				Resource: pointers.String(defaultStatementResource),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure name with too many characters returns an error",
+			fields: fields{
+				Name:     pointers.String("testnametestnametestnametestnametestnametestnametestnametestnamet"),
+				Id:       pointers.String(defaultStatementID),
+				Action:   pointers.String("ec2:DescribeVpcs"),
+				Effect:   pointers.String(ValidEffectAllow),
+				Resource: pointers.String(defaultStatementResource),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure marker with invalid id returns an error",
+			fields: fields{
+				Name:     pointers.String("test"),
+				Id:       pointers.String("Test-Id"),
+				Action:   pointers.String("ec2:DescribeVpcs"),
+				Effect:   pointers.String(ValidEffectAllow),
+				Resource: pointers.String(defaultStatementResource),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure marker with invalid effect returns an error",
+			fields: fields{
+				Name:     pointers.String("test"),
+				Id:       pointers.String("TestId"),
+				Action:   pointers.String("ec2:DescribeVpcs"),
+				Effect:   pointers.String("Fake"),
+				Resource: pointers.String(defaultStatementResource),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure valid marker without effect returns without an error",
+			fields: fields{
+				Name:     pointers.String("test"),
+				Id:       pointers.String("TestId"),
+				Action:   pointers.String("ec2:DescribeVpcs"),
+				Effect:   nil,
+				Resource: pointers.String("*"),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: false,
+		},
+		{
+			name: "ensure valid marker returns without an error",
+			fields: fields{
+				Name:     pointers.String("test"),
+				Id:       pointers.String("TestId"),
+				Action:   pointers.String("ec2:DescribeVpcs"),
+				Effect:   pointers.String(ValidEffectAllow),
+				Resource: pointers.String("*"),
+				Reason:   pointers.String("test"),
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			marker := &Marker{
+				Name:     tt.fields.Name,
+				Id:       tt.fields.Id,
+				Action:   tt.fields.Action,
+				Effect:   tt.fields.Effect,
+				Resource: tt.fields.Resource,
+				Reason:   tt.fields.Reason,
+			}
+			if err := marker.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("Marker.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestMarkerDefinition(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MarkerDefinition(); got != tt.want {
+				t.Errorf("MarkerDefinition() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

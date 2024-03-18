@@ -23,13 +23,13 @@ type Processor struct {
 	Log                 zerolog.Logger
 	Definition          *marker.Definition
 	Registry            *marker.Registry
-	PolicyFileGenerator policy.FileGenerator
+	PolicyFileGenerator policy.DocumentGenerator
 }
 
 // NewProcessor instantiates a new instance of a Processor object.  A processor
 // is used to process a given set of markers from a given set of inputs, mainly
 // the input path to parse.
-func NewProcessor(config *Config, marker string, object interface{}, generator policy.FileGenerator) (*Processor, error) {
+func NewProcessor(config *Config, marker string, object interface{}, generator policy.DocumentGenerator) (*Processor, error) {
 	// configure logging
 	level := zerolog.InfoLevel
 	if config.Debug {
@@ -83,7 +83,7 @@ func (processor *Processor) Process() error {
 	}
 
 	// retrieve our policy files from our markers
-	policyFiles, err := policy.ToPolicyFiles(policyMarkers, processor.PolicyFileGenerator)
+	policyFiles, err := policy.ToFiles(policyMarkers, processor.PolicyFileGenerator)
 	if err != nil {
 		return fmt.Errorf("error retrieving files from markers - %w", err)
 	}
@@ -133,14 +133,12 @@ func (processor *Processor) Parse() ([]*parser.Result, error) {
 	results := []*parser.Result{}
 
 	for path := range files {
-		fullPath := fmt.Sprintf("%s/%s", processor.Config.InputDirectory.Path, files[path])
-
-		processor.Log.Debug().Msgf("collecting marker results for file: [%s]", fullPath)
+		processor.Log.Debug().Msgf("collecting marker results for file: [%s]", files[path])
 
 		// read in the file content
-		content, err := os.ReadFile(fullPath)
+		content, err := os.ReadFile(files[path])
 		if err != nil {
-			return nil, fmt.Errorf("unable to read file: [%s] - %w", fullPath, err)
+			return nil, fmt.Errorf("unable to read file: [%s] - %w", files[path], err)
 		}
 
 		// only append text file content

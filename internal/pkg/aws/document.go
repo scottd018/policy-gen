@@ -50,6 +50,8 @@ func (document *PolicyDocument) AddStatementFor(marker Marker) {
 	} else if !statement.HasResource(*marker.Resource) || !statement.HasEffect(*marker.Effect) {
 		marker.AdjustID()
 		document.AddStatementFor(marker)
+
+		return
 	}
 
 	// append the marker data to the existing statement

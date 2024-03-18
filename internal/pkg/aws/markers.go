@@ -45,7 +45,7 @@ type Markers []Marker
 
 // MarkerDefinition returns the marker definition for an AWS IAM policy marker.
 func MarkerDefinition() string {
-	return fmt.Sprintf("+%s:%s", policy.MarkerPrefix, awsMarkerDefinition)
+	return fmt.Sprintf("%s%s:%s", policy.MarkerPrefixStart, policy.MarkerPrefixString, awsMarkerDefinition)
 }
 
 // Definition returns the marker definition for an AWS IAM policy marker.  It is used
@@ -181,26 +181,31 @@ func (marker *Marker) ReasonColumn() string {
 
 // AdjustID adjusts an ID for situations where a conflict arises.
 func (marker *Marker) AdjustID() {
-	// this collects the tailing integers on the current id
-	var tailing string
+	// this collects the suffix integers on the current id
+	var suffix string
+
+	// the prefix is considered to be the non-integer prefix
+	prefix := *marker.Id
 
 	// loop until we do not find a trailing integer
-	for i := len(*marker.Id) - 1; i >= 0; i-- {
+	for i := len(prefix) - 1; i >= 0; i-- {
 		id := *marker.Id
 
 		// break the loop if we found a non-integer
 		if !unicode.IsDigit(rune(id[i])) {
+			prefix = prefix[:(i + 1)]
+
 			break
 		}
 
 		// collect the integer and store it
-		tailing = fmt.Sprintf("%s%s", string(id[i]), tailing)
+		suffix = fmt.Sprintf("%s%s", string(id[i]), suffix)
 	}
 
 	// add to the collected value
-	value, _ := strconv.Atoi(tailing)
+	value, _ := strconv.Atoi(suffix)
 	value += 1
 
 	// set the id
-	marker.Id = pointers.String(fmt.Sprintf("%s%d", *marker.Id, value))
+	marker.Id = pointers.String(fmt.Sprintf("%s%d", prefix, value))
 }

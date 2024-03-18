@@ -13,45 +13,12 @@ var (
 	ErrMarkerNameMismatch = errors.New("found mismatching marker names in same file")
 )
 
-type PolicyFileGenerator struct {
+type PolicyDocumentGenerator struct {
 	Directory *files.Directory
 }
 
-// GenerateFile generates a file for a given path and set of markers.  The file includes the content
-// based on the policy.
-func (generator *PolicyFileGenerator) GenerateFile(path string, markers []policy.Marker) (*files.File, error) {
-	awsMarkers := make([]Marker, len(markers))
-
-	var name string
-
-	// validate the markers and convert them to the proper type
-	for i := range markers {
-		marker, ok := markers[i].(*Marker)
-		if !ok {
-			return nil, ErrMarkerConvert
-		}
-
-		if name != "" {
-			if name != *marker.Name {
-				return nil, fmt.Errorf("[%s/%s] - %w", name, *marker.Name, ErrMarkerNameMismatch)
-			}
-		} else {
-			name = *marker.Name
-		}
-
-		awsMarkers[i] = *marker
-	}
-
-	return NewPolicyDocument(awsMarkers...).ToFile(path)
-}
-
-// GetDirectory prints the directory path.  It is use to satisfy the policymarkers.FileGenerator interface.
-func (generator *PolicyFileGenerator) GetDirectory() *files.Directory {
-	return generator.Directory
-}
-
 // ToPolicyMarkerMap generates a map of filenames with their given set of markers.
-func (generator *PolicyFileGenerator) ToPolicyMarkerMap(markers []policy.Marker) (policy.MarkerMap, error) {
+func (generator *PolicyDocumentGenerator) ToPolicyMarkerMap(markers []policy.Marker) (policy.MarkerMap, error) {
 	// markerMap collects all of the markers that belong to a particular file.
 	markerMap := policy.MarkerMap{}
 
@@ -89,4 +56,32 @@ func (generator *PolicyFileGenerator) ToPolicyMarkerMap(markers []policy.Marker)
 	}
 
 	return markerMap, nil
+}
+
+// ToDocument generates a document from a given set of markers.  The file includes the content
+// based on the policy.
+func (generator *PolicyDocumentGenerator) ToDocument(markers []policy.Marker) (policy.Document, error) {
+	awsMarkers := make([]Marker, len(markers))
+
+	var name string
+
+	// validate the markers and convert them to the proper type
+	for i := range markers {
+		marker, ok := markers[i].(*Marker)
+		if !ok {
+			return nil, ErrMarkerConvert
+		}
+
+		if name != "" {
+			if name != *marker.Name {
+				return nil, fmt.Errorf("[%s/%s] - %w", name, *marker.Name, ErrMarkerNameMismatch)
+			}
+		} else {
+			name = *marker.Name
+		}
+
+		awsMarkers[i] = *marker
+	}
+
+	return NewPolicyDocument(awsMarkers...), nil
 }
