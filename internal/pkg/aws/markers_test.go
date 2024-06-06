@@ -392,7 +392,7 @@ func TestMarker_Validate(t *testing.T) {
 		{
 			name: "ensure name with invalid characters returns an error",
 			fields: fields{
-				Name:     pointers.String("test-name"),
+				Name:     pointers.String("test#name"),
 				Id:       pointers.String(defaultStatementID),
 				Action:   pointers.String("ec2:DescribeVpcs"),
 				Effect:   pointers.String(ValidEffectAllow),
