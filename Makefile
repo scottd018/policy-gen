@@ -23,7 +23,8 @@ test-functional-aws:
 			--output-path=internal/pkg/aws/test/output \
 			--documentation=internal/pkg/aws/test/output/README.md \
 			--force \
-			--debug
+			--debug \
+			--recursive
 
 test-e2e-start-aws:
 	docker run \

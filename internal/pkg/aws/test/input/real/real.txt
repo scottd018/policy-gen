@@ -1,0 +1,36 @@
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:CreateBucket`,resource=`arn:aws:s3:::*/*`,reason=`Allows ability to create a bucket
+// needed for storing OIDC configuration.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:PutPublicAccessBlock`,resource=`arn:aws:s3:::*/*`,reason=`Allows ability to adjust the
+// public access block to allow AWS services to retrieve object like OIDC configurations.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:PutBucketTagging`,resource=`arn:aws:s3:::*/*`,reason=`Allows ability to tag a bucket
+// during installation to meet requirements based on the --tags field.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:ListBucket`,resource=`arn:aws:s3:::*/*`,reason=`Allows ability to find the OIDC config bucket
+// during installation.`
+// +policy-gen:aws:iam:policy:name=uninstaller-local,action=`s3:ListBucket`,resource=`arn:aws:s3:::*/*`,reason=`Allows ability to find the OIDC config
+// bucket during uninstallation.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:GetBucketTagging`,resource=`arn:aws:s3:::*/*`,reason=`Allows ability to find the OIDC config bucket
+// during installation.`
+// +policy-gen:aws:iam:policy:name=uninstaller-local,action=`s3:GetBucketTagging`,resource=`arn:aws:s3:::*/*`,reason=`Allows ability to find the OIDC config
+// bucket during uninstallation.`
+// +policy-gen:aws:iam:policy:name=uninstaller-local,action=`s3:DeleteBucket`,resource=`arn:aws:s3:::*/*`,reason=`Allows ability to delete the OIDC config
+// bucket during uninstallation.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:PutObject`,resource=`arn:aws:s3:::*/keys.json`,reason=`Upload OIDC
+// keys configuration file to an S3 bucket.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:PutObject`,resource=`arn:aws:s3:::*/.well-known/openid-configuration`,reason=`Upload OIDC
+// specification file to an S3 bucket.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:PutObjectTagging`,resource=`arn:aws:s3:::*/keys.json`,reason=`Tag OIDC keys configuration
+// to meet requirements based on the --tags field.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:PutObjectTagging`,resource=`arn:aws:s3:::*/.well-known/openid-configuration`,reason=`Tag OIDC
+// specification file to meet requirements based on the --tags field.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:GetObject`,resource=`arn:aws:s3:::*/*`,reason=`Allow ability to find
+// the objects within a bucket during installation, such as keys and OIDC configuration.`
+// +policy-gen:aws:iam:policy:name=installer-local,action=`s3:GetObjectTagging`,resource=`arn:aws:s3:::*/*`,reason=`Allow ability to find
+// tags for the keys within a bucket during installation, such as key and OIDC configuration.`
+// +policy-gen:aws:iam:policy:name=uninstaller-local,action=`s3:GetObject`,resource=`arn:aws:s3:::*/*`,reason=`Allow ability to find
+// the objects within a bucket during uninstallation, such as keys and OIDC configuration.`
+// +policy-gen:aws:iam:policy:name=uninstaller-local,action=`s3:GetObjectTagging`,resource=`arn:aws:s3:::*/*`,reason=`Allow ability to find
+// tags for the keys within a bucket during uninstallation, such as key and OIDC configuration.`
+// +policy-gen:aws:iam:policy:name=uninstaller-local,action=`s3:DeleteObject`,resource=`arn:aws:s3:::*/keys.json`,reason=`Needed to delete keys
+// during uninstallation.`
+// +policy-gen:aws:iam:policy:name=uninstaller-local,action=`s3:DeleteObject`,resource=`arn:aws:s3:::*/.well-known/openid-configuration`,reason=`Needed to delete OIDC configuration
+// during uninstallation.`

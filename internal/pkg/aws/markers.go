@@ -17,12 +17,14 @@ var (
 	ErrMarkerMissingAction      = errors.New("marker missing action field")
 	ErrMarkerInvalidEffect      = errors.New("invalid marker effect")
 	ErrMarkerInvalidStatementID = errors.New("invalid statement id - must contain a-z, A-Z, 0-9 and limited to 64 characters")
-	ErrMarkerInvalidName        = errors.New("invalid name - must contain only lowercase alphanumeric characters and limited to 64 characters")
+	ErrMarkerInvalidName        = errors.New(
+		"invalid name - must contain only lowercase alphanumeric characters with underscores or dashes and is limited to 64 characters",
+	)
 )
 
 const (
 	awsMarkerDefinition = "aws:iam:policy"
-	nameRegex           = "^[a-z0-9]{1,64}$"
+	nameRegex           = "^[a-z0-9_-]{1,64}$"
 
 	ValidEffectAllow = "Allow"
 	ValidEffectDeny  = "Deny"
@@ -71,7 +73,7 @@ func (marker *Marker) Validate() error {
 		}
 	}
 
-	// ensure the name only contains lowercase characters with underscores and is limited
+	// ensure the name only contains lowercase characters with underscores/dashes and is limited
 	// to 64 characters in length.  this is because we are generating file names based upon
 	// the policy name and grouping those with like names together into separate policy
 	// files.
