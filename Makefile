@@ -35,9 +35,13 @@ test-e2e-start-aws:
 
 test-e2e-aws:
 	aws iam create-policy \
-		--policy-name test \
-		--policy-document file://internal/pkg/aws/test/output/test.json \
-		--description "this is a test aws policy"
+		--policy-name test-installer \
+		--policy-document file://internal/pkg/aws/test/output/installer-local.json \
+		--description "this is a test aws installer policy"
+	aws iam create-policy \
+		--policy-name test-uninstaller \
+		--policy-document file://internal/pkg/aws/test/output/uninstaller-local.json \
+		--description "this is a test aws uninstaller policy"
 
 test-coverage-view: test-unit
 	go tool cover -html=./bin/coverage.out
