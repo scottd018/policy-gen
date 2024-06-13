@@ -6,6 +6,7 @@ import (
 
 	"github.com/scottd018/go-utils/pkg/pointers"
 
+	"github.com/scottd018/policy-gen/internal/pkg/aws/conditions"
 	"github.com/scottd018/policy-gen/internal/pkg/files"
 	"github.com/scottd018/policy-gen/internal/pkg/policy"
 )
@@ -317,6 +318,26 @@ func TestPolicyDocumentGenerator_ToDocument(t *testing.T) {
 						Effect:   pointers.String(defaultStatementEffect),
 						Resource: pointers.String("thisisfake2"),
 					},
+					&Marker{
+						Id:                pointers.String("test1"),
+						Name:              pointers.String("test"),
+						Action:            pointers.String("route53:*"),
+						Effect:            pointers.String(defaultStatementEffect),
+						Resource:          pointers.String(defaultStatementResource),
+						ConditionOperator: pointers.String(conditions.StringEqualsOperator),
+						ConditionKey:      pointers.String("test"),
+						ConditionValue:    pointers.String("test"),
+					},
+					&Marker{
+						Id:                pointers.String("test1"),
+						Name:              pointers.String("test"),
+						Action:            pointers.String("rds:*"),
+						Effect:            pointers.String(defaultStatementEffect),
+						Resource:          pointers.String(defaultStatementResource),
+						ConditionOperator: pointers.String(conditions.StringEqualsOperator),
+						ConditionKey:      pointers.String("test"),
+						ConditionValue:    pointers.String("test"),
+					},
 				},
 			},
 			want: &PolicyDocument{
@@ -364,6 +385,18 @@ func TestPolicyDocumentGenerator_ToDocument(t *testing.T) {
 							"kms:*",
 						},
 						Resources: []string{"thisisfake2"},
+					},
+					{
+						SID:    "test5",
+						Effect: defaultStatementEffect,
+						Action: []string{
+							"route53:*",
+							"rds:*",
+						},
+						Resources: []string{defaultStatementResource},
+						Condition: &conditions.Condition{
+							StringEquals: conditions.Operator{"test": "test"},
+						},
 					},
 				},
 			},

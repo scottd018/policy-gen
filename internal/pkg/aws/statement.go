@@ -1,5 +1,11 @@
 package aws
 
+import (
+	"reflect"
+
+	"github.com/scottd018/policy-gen/internal/pkg/aws/conditions"
+)
+
 const (
 	statementIDRegex = "^[a-zA-Z0-9]{1,64}$"
 )
@@ -11,10 +17,11 @@ var (
 )
 
 type Statement struct {
-	SID       string   `json:"Sid"`
-	Effect    string   `json:"Effect"`
-	Action    []string `json:"Action"`
-	Resources []string `json:"Resource"`
+	SID       string                `json:"Sid"`
+	Effect    string                `json:"Effect"`
+	Action    []string              `json:"Action"`
+	Resources []string              `json:"Resource"`
+	Condition *conditions.Condition `json:"Condition,omitempty"`
 }
 
 type Statements []Statement
@@ -72,6 +79,11 @@ func (statement *Statement) HasResource(resource string) bool {
 // other Has* methods.
 func (statement *Statement) HasEffect(effect string) bool {
 	return statement.Effect == effect
+}
+
+// HasCondition determines if a particular statement has a condition.
+func (statement *Statement) HasCondition(condition *conditions.Condition) bool {
+	return reflect.DeepEqual(statement.Condition, condition)
 }
 
 // AppendAction appends an action to an existing statement.

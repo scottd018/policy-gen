@@ -33,4 +33,4 @@
 // +policy-gen:aws:iam:policy:name=uninstaller-local,action=`s3:DeleteObject`,resource=`arn:aws:s3:::*/keys.json`,reason=`Needed to delete keys
 // during uninstallation.`
 // +policy-gen:aws:iam:policy:name=uninstaller-local,action=`s3:DeleteObject`,resource=`arn:aws:s3:::*/.well-known/openid-configuration`,reason=`Needed to delete OIDC configuration
-// during uninstallation.`
+// during uninstallation.`,conditionKey=`aws:RequestTag/managed`,conditionValue=`true`,conditionOperator=`StringEquals`

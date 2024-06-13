@@ -8,6 +8,7 @@ const (
 	FakePermissionColumn = "*"
 	FakeReasonColumn     = FakeString
 	FakeResourceColumn   = "*"
+	FakeConditionColumn  = ""
 )
 
 // fake is a struct to fulfill the policymarkers.Marker interface, but is used
@@ -32,3 +33,4 @@ func (f *fake) EffectColumn() string     { return FakeEffectColumn }
 func (f *fake) PermissionColumn() string { return FakePermissionColumn }
 func (f *fake) ReasonColumn() string     { return FakeReasonColumn }
 func (f *fake) ResourceColumn() string   { return FakeResourceColumn }
+func (f *fake) ConditionColumn() string  { return FakeConditionColumn }

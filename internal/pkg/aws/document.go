@@ -47,7 +47,7 @@ func (document *PolicyDocument) AddStatementFor(marker Marker) {
 		document.Statements = append(document.Statements, marker.ToStatement())
 
 		return
-	} else if !statement.HasResource(*marker.Resource) || !statement.HasEffect(*marker.Effect) {
+	} else if !statement.HasResource(*marker.Resource) || !statement.HasEffect(*marker.Effect) || !statement.HasCondition(marker.Condition()) {
 		marker.AdjustID()
 		document.AddStatementFor(marker)
 

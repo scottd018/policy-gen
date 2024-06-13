@@ -5,6 +5,7 @@ const (
 	HeaderPermission = "permission"
 	HeaderResource   = "resource"
 	HeaderReason     = "reason"
+	HeaderCondition  = "condition"
 )
 
 // Header defines the table Header for our documentation page.  This is ordered, so be
@@ -15,5 +16,6 @@ func Header() []string {
 		HeaderPermission,
 		HeaderResource,
 		HeaderReason,
+		HeaderCondition,
 	}
 }

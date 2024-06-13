@@ -19,7 +19,7 @@ test-unit:
 test-functional-aws:
 	mkdir -p bin/ internal/pkg/aws/test/output internal/pkg/files/test/output ;\
 		bin/policy-gen aws \
-			--input-path=internal/pkg/aws/test/input \
+			--input-path=internal/pkg/aws/test/input/real \
 			--output-path=internal/pkg/aws/test/output \
 			--documentation=internal/pkg/aws/test/output/README.md \
 			--force \

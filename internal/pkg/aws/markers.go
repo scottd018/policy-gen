@@ -5,19 +5,25 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"unicode"
 
 	"github.com/scottd018/go-utils/pkg/pointers"
 
+	"github.com/scottd018/policy-gen/internal/pkg/aws/conditions"
 	"github.com/scottd018/policy-gen/internal/pkg/policy"
 )
 
 var (
-	ErrMarkerMissingName        = errors.New("marker missing name field")
-	ErrMarkerMissingAction      = errors.New("marker missing action field")
-	ErrMarkerInvalidEffect      = errors.New("invalid marker effect")
-	ErrMarkerInvalidStatementID = errors.New("invalid statement id - must contain a-z, A-Z, 0-9 and limited to 64 characters")
-	ErrMarkerInvalidName        = errors.New(
+	ErrMarkerMissingName                     = errors.New("marker missing name field")
+	ErrMarkerMissingAction                   = errors.New("marker missing action field")
+	ErrMarkerInvalidEffect                   = errors.New("invalid marker effect")
+	ErrMarkerInvalidStatementID              = errors.New("invalid statement id - must contain a-z, A-Z, 0-9 and limited to 64 characters")
+	ErrMarkerInvalidConditionMissingKey      = errors.New("condition key is missing")
+	ErrMarkerInvalidConditionMissingValue    = errors.New("condition value is missing")
+	ErrMarkerInvalidConditionMissingOperator = errors.New("condition operator is missing")
+	ErrMarkerInvalidConditionOperator        = errors.New("invalid condition operator")
+	ErrMarkerInvalidName                     = errors.New(
 		"invalid name - must contain only lowercase alphanumeric characters with underscores or dashes and is limited to 64 characters",
 	)
 )
@@ -41,9 +47,12 @@ type Marker struct {
 	Effect   *string
 	Resource *string
 	Reason   *string
-}
 
-type Markers []Marker
+	// conditions
+	ConditionOperator *string
+	ConditionKey      *string
+	ConditionValue    *string
+}
 
 // MarkerDefinition returns the marker definition for an AWS IAM policy marker.
 func MarkerDefinition() string {
@@ -91,12 +100,15 @@ func (marker *Marker) Validate() error {
 	}
 
 	// ensure effect is valid
-	if marker.Effect == nil {
-		return nil
+	if marker.Effect != nil {
+		if *marker.Effect != ValidEffectAllow && *marker.Effect != ValidEffectDeny {
+			return fmt.Errorf("%w [%s]", ErrMarkerInvalidEffect, *marker.Effect)
+		}
 	}
 
-	if *marker.Effect != ValidEffectAllow && *marker.Effect != ValidEffectDeny {
-		return fmt.Errorf("%w [%s]", ErrMarkerInvalidEffect, *marker.Effect)
+	// ensure the condition is valid
+	if err := marker.ValidateCondition(); err != nil {
+		return fmt.Errorf("invalid condition specified - %w", err)
 	}
 
 	return nil
@@ -138,7 +150,17 @@ func (marker Marker) ToStatement() Statement {
 		Effect:    *marker.Effect,
 		Resources: []string{*marker.Resource},
 		SID:       *marker.Id,
+		Condition: marker.Condition(),
 	}
+}
+
+// Condition returns the condition for a given marker.
+func (marker *Marker) Condition() *conditions.Condition {
+	if marker.HasConditionKey() && marker.HasConditionValue() && marker.HasConditionOperator() {
+		return conditions.NewCondition(*marker.ConditionKey, *marker.ConditionValue, *marker.ConditionOperator)
+	}
+
+	return nil
 }
 
 // EffectColumn returns the effect for the marker.  It is used to satisfy
@@ -181,6 +203,19 @@ func (marker *Marker) ReasonColumn() string {
 	return *marker.Reason
 }
 
+// ConditionColumn returns the conditions for the permission, represented in a comma-separated list.
+// It is used to satisfy the docs.Row interface.  For now, we only care about tag conditions, but this may expand
+// if more conditions are added in the future.
+func (marker *Marker) ConditionColumn() string {
+	condition := marker.Condition()
+
+	if condition != nil {
+		return condition.String()
+	}
+
+	return ""
+}
+
 // AdjustID adjusts an ID for situations where a conflict arises.
 func (marker *Marker) AdjustID() {
 	// this collects the suffix integers on the current id
@@ -210,4 +245,61 @@ func (marker *Marker) AdjustID() {
 
 	// set the id
 	marker.Id = pointers.String(fmt.Sprintf("%s%d", prefix, value))
+}
+
+// HasConditionOperator returns whether or not a marker has a condition operator.
+func (marker *Marker) HasConditionOperator() bool {
+	return hasStringValue(marker.ConditionOperator)
+}
+
+// HasConditionKey returns whether or not a marker has a condition key.
+func (marker *Marker) HasConditionKey() bool {
+	return hasStringValue(marker.ConditionKey)
+}
+
+// HasConditionValue returns whether or not a marker has a condition value.
+func (marker *Marker) HasConditionValue() bool {
+	return hasStringValue(marker.ConditionValue)
+}
+
+// ValidateCondition returns whether or not a marker has a valid condition.
+func (marker *Marker) ValidateCondition() error {
+	hasConditionKey := marker.HasConditionKey()
+	hasConditionValue := marker.HasConditionValue()
+	hasConditionOperator := marker.HasConditionOperator()
+
+	if (hasConditionKey == hasConditionValue) && (hasConditionValue == hasConditionOperator) {
+		if hasConditionOperator && conditions.ToOperatorString(*marker.ConditionOperator) == "" {
+			return fmt.Errorf("found operator [%s] - %w", *marker.ConditionOperator, ErrMarkerInvalidConditionOperator)
+		}
+
+		return nil
+	}
+
+	messages := []string{"conditionKey, conditionValue, and conditionOperator are mutually inclusive options"}
+
+	if !hasConditionKey {
+		messages = append(messages, ErrMarkerInvalidConditionMissingKey.Error())
+	}
+
+	if !hasConditionValue {
+		messages = append(messages, ErrMarkerInvalidConditionMissingValue.Error())
+	}
+
+	if !hasConditionOperator {
+		messages = append(messages, ErrMarkerInvalidConditionMissingOperator.Error())
+	} else if hasConditionOperator && conditions.ToOperatorString(*marker.ConditionOperator) == "" {
+		messages = append(messages, fmt.Sprintf("found operator [%s] - %s", *marker.ConditionOperator, ErrMarkerInvalidConditionOperator.Error()))
+	}
+
+	return fmt.Errorf(strings.Join(messages, " : "))
+}
+
+// hasStringValue returns whether or not a marker has a string value given a pointer to a string.
+func hasStringValue(value *string) bool {
+	if value == nil {
+		return false
+	}
+
+	return *value != ""
 }

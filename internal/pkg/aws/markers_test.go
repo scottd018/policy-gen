@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/scottd018/go-utils/pkg/pointers"
+
+	"github.com/scottd018/policy-gen/internal/pkg/aws/conditions"
 )
 
 func TestMarker_Definition(t *testing.T) {
@@ -328,12 +330,15 @@ func TestMarker_Validate(t *testing.T) {
 
 	//nolint:revive,stylecheck
 	type fields struct {
-		Name     *string
-		Id       *string
-		Action   *string
-		Effect   *string
-		Resource *string
-		Reason   *string
+		Name              *string
+		Id                *string
+		Action            *string
+		Effect            *string
+		Resource          *string
+		Reason            *string
+		ConditionKey      *string
+		ConditionValue    *string
+		ConditionOperator *string
 	}
 
 	tests := []struct {
@@ -438,6 +443,74 @@ func TestMarker_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "ensure marker with a condition key without a condition value/operator returns an error",
+			fields: fields{
+				Name:         pointers.String("test"),
+				Id:           pointers.String("TestId"),
+				Action:       pointers.String("ec2:DescribeVpcs"),
+				Effect:       pointers.String(ValidEffectAllow),
+				Resource:     pointers.String("*"),
+				Reason:       pointers.String("test"),
+				ConditionKey: pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure marker with a condition value without a condition key/operator returns an error",
+			fields: fields{
+				Name:           pointers.String("test"),
+				Id:             pointers.String("TestId"),
+				Action:         pointers.String("ec2:DescribeVpcs"),
+				Effect:         pointers.String(ValidEffectAllow),
+				Resource:       pointers.String("*"),
+				Reason:         pointers.String("test"),
+				ConditionValue: pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure marker with a condition operator without a condition key/value returns an error",
+			fields: fields{
+				Name:              pointers.String("test"),
+				Id:                pointers.String("TestId"),
+				Action:            pointers.String("ec2:DescribeVpcs"),
+				Effect:            pointers.String(ValidEffectAllow),
+				Resource:          pointers.String("*"),
+				Reason:            pointers.String("test"),
+				ConditionOperator: pointers.String("FakeStringEqualsOperator"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure marker with a condition key/value without a condition operator returns an error",
+			fields: fields{
+				Name:           pointers.String("test"),
+				Id:             pointers.String("TestId"),
+				Action:         pointers.String("ec2:DescribeVpcs"),
+				Effect:         pointers.String(ValidEffectAllow),
+				Resource:       pointers.String("*"),
+				Reason:         pointers.String("test"),
+				ConditionKey:   pointers.String("test"),
+				ConditionValue: pointers.String("test"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "ensure marker with an invalid condition operator returns an error",
+			fields: fields{
+				Name:              pointers.String("test"),
+				Id:                pointers.String("TestId"),
+				Action:            pointers.String("ec2:DescribeVpcs"),
+				Effect:            pointers.String(ValidEffectAllow),
+				Resource:          pointers.String("*"),
+				Reason:            pointers.String("test"),
+				ConditionKey:      pointers.String("test"),
+				ConditionValue:    pointers.String("test"),
+				ConditionOperator: pointers.String("FakeStringEquals"),
+			},
+			wantErr: true,
+		},
+		{
 			name: "ensure valid marker without effect returns without an error",
 			fields: fields{
 				Name:     pointers.String("test"),
@@ -452,12 +525,15 @@ func TestMarker_Validate(t *testing.T) {
 		{
 			name: "ensure valid marker returns without an error",
 			fields: fields{
-				Name:     pointers.String("test"),
-				Id:       pointers.String("TestId"),
-				Action:   pointers.String("ec2:DescribeVpcs"),
-				Effect:   pointers.String(ValidEffectAllow),
-				Resource: pointers.String("*"),
-				Reason:   pointers.String("test"),
+				Name:              pointers.String("test"),
+				Id:                pointers.String("TestId"),
+				Action:            pointers.String("ec2:DescribeVpcs"),
+				Effect:            pointers.String(ValidEffectAllow),
+				Resource:          pointers.String("*"),
+				Reason:            pointers.String("test"),
+				ConditionKey:      pointers.String("test"),
+				ConditionValue:    pointers.String("test"),
+				ConditionOperator: pointers.String(conditions.StringEqualsOperator),
 			},
 			wantErr: false,
 		},
@@ -469,12 +545,15 @@ func TestMarker_Validate(t *testing.T) {
 			t.Parallel()
 
 			marker := &Marker{
-				Name:     tt.fields.Name,
-				Id:       tt.fields.Id,
-				Action:   tt.fields.Action,
-				Effect:   tt.fields.Effect,
-				Resource: tt.fields.Resource,
-				Reason:   tt.fields.Reason,
+				Name:              tt.fields.Name,
+				Id:                tt.fields.Id,
+				Action:            tt.fields.Action,
+				Effect:            tt.fields.Effect,
+				Resource:          tt.fields.Resource,
+				Reason:            tt.fields.Reason,
+				ConditionKey:      tt.fields.ConditionKey,
+				ConditionValue:    tt.fields.ConditionValue,
+				ConditionOperator: tt.fields.ConditionOperator,
 			}
 			if err := marker.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Marker.Validate() error = %v, wantErr %v", err, tt.wantErr)

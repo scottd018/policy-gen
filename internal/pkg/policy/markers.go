@@ -18,6 +18,7 @@ type Marker interface {
 	PermissionColumn() string
 	ReasonColumn() string
 	ResourceColumn() string
+	ConditionColumn() string
 }
 
 // MarkerMap is a map of a string to a set of markers.  In this case the string represents

@@ -46,6 +46,7 @@ func (docs *Documentation) Generate(rows ...Row) {
 				row.PermissionColumn(),
 				row.ResourceColumn(),
 				row.ReasonColumn(),
+				row.ConditionColumn(),
 			},
 		)
 	}

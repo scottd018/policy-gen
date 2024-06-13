@@ -5,4 +5,5 @@ type Row interface {
 	PermissionColumn() string
 	ResourceColumn() string
 	ReasonColumn() string
+	ConditionColumn() string
 }
