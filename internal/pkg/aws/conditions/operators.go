@@ -2,8 +2,10 @@ package conditions
 
 // see https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition_operators.html#Conditions_String
 // for a complete list of operators.
+//
+//nolint:revive,stylecheck
 const (
-	// string condition operators
+	// string condition operators.
 	StringEqualsOperator              = "StringEquals"
 	StringNotEqualsOperator           = "StringNotEquals"
 	StringEqualsIgnoreCaseOperator    = "StringEqualsIgnoreCase"
@@ -11,7 +13,7 @@ const (
 	StringLikeOperator                = "StringLike"
 	StringNotLikeOperator             = "StringNotLike"
 
-	// numeric condition operators
+	// numeric condition operators.
 	NumericEqualsOperator            = "NumericEquals"
 	NumericNotEqualsOperator         = "NumericNotEquals"
 	NumericLessThanOperator          = "NumericLessThan"
@@ -19,7 +21,7 @@ const (
 	NumericGreaterThanOperator       = "NumericGreaterThan"
 	NumericGreaterThanEqualsOperator = "NumericGreaterThanEquals"
 
-	// date condition operators
+	// date condition operators.
 	DateEqualsOperator            = "DateEquals"
 	DateNotEqualsOperator         = "DateNotEquals"
 	DateLessThanOperator          = "DateLessThan"
@@ -27,17 +29,17 @@ const (
 	DateGreaterThanOperator       = "DateGreaterThan"
 	DateGreaterThanEqualsOperator = "DateGreaterThanEquals"
 
-	// boolean condition operators
+	// boolean condition operators.
 	BoolOperator = "Bool"
 
-	// binary condition operators
+	// binary condition operators.
 	BinaryEqualsOperator = "BinaryEquals"
 
-	// ip condition operators
+	// ip condition operators.
 	IpAddressOperator    = "IpAddress"
 	NotIpAddressOperator = "NotIpAddress"
 
-	// arn condition operators
+	// arn condition operators.
 	ArnEqualsOperator    = "ArnEquals"
 	ArnNotEqualsOperator = "ArnNotEquals"
 	ArnLikeOperator      = "ArnLike"

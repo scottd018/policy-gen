@@ -67,6 +67,8 @@ func (marker *Marker) Definition() string {
 
 // Validate validates that a marker is valid.  It is used to satisfy the policymarkers.Marker
 // interface.
+//
+//nolint:cyclop
 func (marker *Marker) Validate() error {
 	// ensure required markers are set
 	for err, markerField := range map[error]*string{
@@ -292,7 +294,7 @@ func (marker *Marker) ValidateCondition() error {
 		messages = append(messages, fmt.Sprintf("found operator [%s] - %s", *marker.ConditionOperator, ErrMarkerInvalidConditionOperator.Error()))
 	}
 
-	return fmt.Errorf(strings.Join(messages, " : "))
+	return fmt.Errorf("%s", strings.Join(messages, " : "))
 }
 
 // hasStringValue returns whether or not a marker has a string value given a pointer to a string.
